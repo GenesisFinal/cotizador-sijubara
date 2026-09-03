@@ -281,7 +281,7 @@ body {
    ========================================================================== */
 .main-layout {
     display: grid;
-    grid-template-columns: 390px 1fr;
+    grid-template-columns: 480px 1fr;
     gap: 36px;
     padding-top: 36px;
     padding-bottom: 60px;
@@ -416,7 +416,7 @@ body {
 
 .range-with-input {
     display: grid;
-    grid-template-columns: 1fr 105px;
+    grid-template-columns: 1fr 125px;
     gap: 12px;
     align-items: center;
 }
@@ -1420,7 +1420,7 @@ body {
 /* ==========================================================================
    Responsive Breakpoints
    ========================================================================== */
-@media (max-width: 1024px) {
+@media (max-width: 1180px) {
     .main-layout {
         grid-template-columns: 1fr;
     }
