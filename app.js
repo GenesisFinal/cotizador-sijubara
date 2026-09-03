@@ -261,9 +261,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = calculateRetirementPlan(params);
         lastSimulationResult = res;
 
-        displayContrato.textContent = formatCurrencyFull(params.salarioMensual);
-        displayMesesAporte.textContent = `${params.mesesAporteAnio} meses`;
-        displayEdadRetiro.textContent = `${params.edadRetiro} años`;
+        if (displayContrato) displayContrato.textContent = formatCurrencyFull(params.salarioMensual);
+        if (displayMesesAporte) displayMesesAporte.textContent = `${params.mesesAporteAnio} meses`;
+        if (displayEdadRetiro) displayEdadRetiro.textContent = `${params.edadRetiro} años`;
 
         calcAporteJugadorMes.textContent = `Equivale a: USD $${Math.round(params.salarioMensual * params.pctJugador)} / mes`;
         calcAporteClubMes.textContent = `Equivale a: USD $${Math.round(params.salarioMensual * params.pctClub)} / mes`;
