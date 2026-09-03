@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador de Retiro | SIJUBARA & La Segunda</title>
+    <meta name="description" content="Simulador de Seguros de Retiro para jugadores de basquetbol. SIJUBARA y La Segunda Seguros.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="top-header">
+        <div class="container header-container">
+            <div class="branding-group">
+                <div class="logo-wrapper">
+                    <img src="assets/logo_sijubara.png" alt="SIJUBARA" class="brand-logo-sijubara">
+                </div>
+                <div class="co-branding-divider"></div>
+                <div class="partner-badge">
+                    <div class="mosaic-bar">
+                        <span class="m-red-dark"></span>
+                        <span class="m-red-main"></span>
+                        <span class="m-red-light"></span>
+                        <span class="m-red-soft"></span>
+                    </div>
+                    <div class="partner-text">
+                        <span class="partner-title">LA SEGUNDA</span>
+                        <span class="partner-subtitle">SEGUROS DE RETIRO</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="btnExportPDF" class="btn btn-outline"><i data-lucide="file-text"></i><span>Exportar PDF</span></button>
+                <button id="btnExportExcel" class="btn btn-outline"><i data-lucide="download"></i><span>Descargar Datos</span></button>
+                <button id="btnResetDefaults" class="btn btn-ghost"><i data-lucide="rotate-ccw"></i><span class="desktop-only">Valores Iniciales</span></button>
+            </div>
+        </div>
+    </header>
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <div class="badge-pill"><i data-lucide="shield-check"></i> Plan Oficial de Retiro Deportivo</div>
+                <h1>Proyección de Retiro para Jugadores de Básquetbol</h1>
+                <p class="hero-subtitle">Construí un patrimonio sólido durante tu carrera activa con el aporte conjunto de tu club y la rentabilidad garantizada en dólares de La Segunda Seguros.</p>
+            </div>
+        </div>
+    </section>
+    <main class="container main-layout">
+        <aside class="calculator-sidebar">
+            <div class="card card-inputs">
+                <div class="card-header">
+                    <div class="card-title-group"><i data-lucide="sliders-horizontal" class="icon-accent"></i><h2>Parámetros de tu Plan</h2></div>
+                    <span class="live-indicator"><span class="dot"></span> En tiempo real</span>
+                </div>
+                <form id="calculatorForm" class="form-inputs" onsubmit="return false;">
+                    <div class="form-section-title"><i data-lucide="user"></i><span>Datos del Jugador (Opcional)</span></div>
+                    <div class="form-group-compact"><label for="inputNombreJugador">Nombre y Apellido</label><input type="text" id="inputNombreJugador" class="form-control" placeholder="Ej. Emanuel Ginóbili"></div>
+                    <div class="form-group-compact"><label for="inputClubJugador">Club / Equipo Actual</label><input type="text" id="inputClubJugador" class="form-control" placeholder="Ej. Club Atlético San Lorenzo"></div>
+                    <div class="divider-form"></div>
+                    <div class="form-section-title"><i data-lucide="dollar-sign"></i><span>Contrato y Aportes</span></div>
+                    <div class="form-group">
+                        <div class="label-with-value"><label for="inputContrato">Contrato Mensual del Jugador</label><span class="value-badge" id="displayContrato">USD $4.000</span></div>
+                        <div class="range-with-input">
+                            <input type="range" id="rangeContrato" min="500" max="30000" step="250" value="4000" class="custom-range">
+                            <div class="input-unit-wrapper"><span class="unit-prefix">USD $</span><input type="number" id="inputContrato" min="100" max="100000" step="100" value="4000" class="form-control form-control-sm"></div>
+                        </div>
+                        <span class="input-helper">Sueldo neto promedio percibido por temporada</span>
+                    </div>
+                    <div class="form-group">
+                        <div class="label-with-value"><label for="inputMesesAporte">Meses de Aporte por Año</label><span class="value-badge" id="displayMesesAporte">10 meses</span></div>
+                        <div class="range-with-input">
+                            <input type="range" id="rangeMesesAporte" min="6" max="12" step="1" value="10" class="custom-range">
+                            <input type="number" id="inputMesesAporte" min="1" max="12" step="1" value="10" class="form-control form-control-sm">
+                        </div>
+                        <span class="input-helper">Meses de duración de la temporada de juego</span>
+                    </div>
+                    <div class="form-section-title"><i data-lucide="calendar"></i><span>Cronograma y Edades</span></div>
+                    <div class="grid-2-cols">
+                        <div class="form-group"><label for="inputEdadInicio">Edad de Inicio</label><div class="input-unit-wrapper"><input type="number" id="inputEdadInicio" min="16" max="45" step="1" value="19" class="form-control"><span class="unit-suffix">años</span></div></div>
+                        <div class="form-group"><label for="inputAniosAporte">Años Activo</label><div class="input-unit-wrapper"><input type="number" id="inputAniosAporte" min="1" max="30" step="1" value="18" class="form-control"><span class="unit-suffix">años</span></div></div>
+                    </div>
+                    <div class="timeline-visual-pill">
+                        <div class="timeline-point"><span class="tp-label">Inicio</span><span class="tp-val" id="pillEdadInicio">19 años</span></div>
+                        <div class="timeline-line active-career"><span class="tl-label" id="pillAniosAporte">18 años aporte</span></div>
+                        <div class="timeline-point"><span class="tp-label">Fin Carrera</span><span class="tp-val" id="pillEdadFin">37 años</span></div>
+                        <div class="timeline-line compounding-growth"><span class="tl-label" id="pillAniosCrecimiento">28 años capitalización</span></div>
+                        <div class="timeline-point"><span class="tp-label">Retiro</span><span class="tp-val" id="pillEdadRetiro">65 años</span></div>
+                    </div>
+                    <div class="form-group">
+                        <div class="label-with-value"><label for="inputEdadRetiro">Edad de Acceso al Fondo (Retiro)</label><span class="value-badge" id="displayEdadRetiro">65 años</span></div>
+                        <div class="range-with-input">
+                            <input type="range" id="rangeEdadRetiro" min="40" max="80" step="1" value="65" class="custom-range">
+                            <input type="number" id="inputEdadRetiro" min="30" max="90" step="1" value="65" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                    <details class="advanced-settings-details">
+                        <summary class="advanced-summary"><i data-lucide="settings-2"></i><span>Aportes y Tasa Actuarial</span><i data-lucide="chevron-down" class="chevron-icon"></i></summary>
+                        <div class="advanced-body">
+                            <div class="form-group-compact"><label for="inputPctJugador">Aporte Jugador (% sueldo)</label><div class="input-unit-wrapper"><input type="number" id="inputPctJugador" min="1" max="25" step="0.5" value="5.0" class="form-control"><span class="unit-suffix">%</span></div><span class="input-helper" id="calcAporteJugadorMes">Equivale a: USD $200 / mes</span></div>
+                            <div class="form-group-compact"><label for="inputPctClub">Aporte Club (% sueldo)</label><div class="input-unit-wrapper"><input type="number" id="inputPctClub" min="0" max="20" step="0.5" value="3.0" class="form-control"><span class="unit-suffix">%</span></div><span class="input-helper" id="calcAporteClubMes">Equivale a: USD $120 / mes</span></div>
+                            <div class="form-group-compact"><label for="inputTasaAnual">Tasa Anual Garantizada / Proyectada</label><div class="input-unit-wrapper"><input type="number" id="inputTasaAnual" min="1.0" max="12.0" step="0.25" value="5.0" class="form-control"><span class="unit-suffix">% TNA</span></div><span class="input-helper" id="calcTasaMensual">Tasa mensual equivalente: 0.4074%</span></div>
+                        </div>
+                    </details>
+                </form>
+            </div>
+            <div class="card card-institutional-info">
+                <div class="inst-header"><div class="badge-tag">Garantía y Confianza</div><h3>¿Por qué este seguro de retiro?</h3></div>
+                <ul class="benefit-list">
+                    <li><i data-lucide="check-circle-2"></i><div><strong>Fondos en Dólares (USD):</strong> Capitalización protegida en moneda dura.</div></li>
+                    <li><i data-lucide="check-circle-2"></i><div><strong>Aporte Co-Financiado:</strong> Tu club aporta un 3% adicional que incrementa directamente tu patrimonio.</div></li>
+                    <li><i data-lucide="check-circle-2"></i><div><strong>Interés Compuesto Continuo:</strong> Luego de finalizar tu carrera deportiva, el capital sigue multiplicándose solo hasta tu jubilación.</div></li>
+                    <li><i data-lucide="check-circle-2"></i><div><strong>Inembargabilidad y Respaldo:</strong> Regulado por la SSN con la solidez de La Segunda Seguros.</div></li>
+                </ul>
+            </div>
+        </aside>
+        <section class="results-dashboard">
+            <div class="milestones-grid">
+                <div class="card card-milestone milestone-career">
+                    <div class="milestone-badge"><i data-lucide="trophy"></i><span>Al Fin de la Carrera Activa (<span id="resEdadFinCarrera">37</span> años)</span></div>
+                    <div class="milestone-main-amount"><span class="currency">USD</span><span class="amount" id="resFondoTotalFinCarrera">$92.629</span></div>
+                    <div class="salary-multiplier-badge" id="resMultiplicadorFinCarrera"><i data-lucide="award"></i> Equivalente a <strong>23.2 meses</strong> de sueldo</div>
+                    <div class="breakdown-pills">
+                        <div class="breakdown-pill player"><span class="b-label"><span class="dot-color dot-player"></span> Fondo Jugador:</span><span class="b-val" id="resFondoJugadorFinCarrera">USD $57.893</span><span class="b-sub" id="resMesesJugadorFinCarrera">(14.5 meses)</span></div>
+                        <div class="breakdown-pill club"><span class="b-label"><span class="dot-color dot-club"></span> Fondo Club:</span><span class="b-val" id="resFondoClubFinCarrera">USD $34.736</span><span class="b-sub" id="resMesesClubFinCarrera">(8.7 meses)</span></div>
+                    </div>
+                </div>
+                <div class="card card-milestone milestone-retirement highlighted">
+                    <div class="ribbon-popular">Crecimiento Máximo</div>
+                    <div class="milestone-badge accent-red"><i data-lucide="piggy-bank"></i><span>Fondo Acumulado al Retiro (<span id="resEdadRetiro">65</span> años)</span></div>
+                    <div class="milestone-main-amount text-glow"><span class="currency">USD</span><span class="amount" id="resFondoTotalRetiro">$381.274</span></div>
+                    <div class="salary-multiplier-badge badge-golden" id="resMultiplicadorRetiro"><i data-lucide="trending-up"></i> Equivalente a <strong>95.3 meses</strong> de sueldo (~8 años)</div>
+                    <div class="breakdown-pills">
+                        <div class="breakdown-pill player"><span class="b-label"><span class="dot-color dot-player"></span> Fondo Jugador:</span><span class="b-val" id="resFondoJugadorRetiro">USD $238.296</span><span class="b-sub" id="resMesesJugadorRetiro">(59.6 meses)</span></div>
+                        <div class="breakdown-pill club"><span class="b-label"><span class="dot-color dot-club"></span> Fondo Club:</span><span class="b-val" id="resFondoClubRetiro">USD $142.978</span><span class="b-sub" id="resMesesClubRetiro">(35.7 meses)</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="kpis-summary-grid">
+                <div class="kpi-mini-card">
+                    <div class="kpi-icon icon-blue"><i data-lucide="layers"></i></div>
+                    <div class="kpi-details"><span class="kpi-title">Total Aportado de Bolsillo</span><span class="kpi-number" id="resTotalAportadoPuro">USD $57.600</span><span class="kpi-sub" id="resSubAportes">Jugador: $36.000 | Club: $21.600</span></div>
+                </div>
+                <div class="kpi-mini-card">
+                    <div class="kpi-icon icon-green"><i data-lucide="sparkles"></i></div>
+                    <div class="kpi-details"><span class="kpi-title">Intereses y Rendimientos</span><span class="kpi-number text-green" id="resInteresesGanados">USD $323.674</span><span class="kpi-sub" id="resMultiplicadorGanancia">El fondo se multiplicó <strong>6.6x</strong> veces</span></div>
+                </div>
+                <div class="kpi-mini-card">
+                    <div class="kpi-icon icon-red"><i data-lucide="calendar-clock"></i></div>
+                    <div class="kpi-details"><span class="kpi-title">Renta Mensual Estimada (20 años)</span><span class="kpi-number text-red" id="resRentaMensualEstimada">USD $2.516 / mes</span><span class="kpi-sub">A partir de tus <span id="resRentaEdad">65</span> años</span></div>
+                </div>
+            </div>
+            <div class="card card-chart">
+                <div class="card-header chart-header-wrap">
+                    <div><h3 class="chart-title"><i data-lucide="line-chart"></i> Evolución y Capitalización del Fondo</h3><p class="chart-subtitle">Proyección anual del saldo acumulado distinguiendo aportes del jugador, del club e intereses compuestos.</p></div>
+                    <div class="chart-controls"><div class="btn-group-toggle" id="chartViewToggle"><button class="btn-toggle active" data-view="stacked">Evolución Acumulada</button><button class="btn-toggle" data-view="separated">Por Origen</button></div></div>
+                </div>
+                <div class="chart-container-wrapper"><canvas id="evolutionChart"></canvas></div>
+                <div class="chart-footer-note"><span class="legend-badge legend-active-zone"><i class="dot-active"></i> Período Activo de Aportes</span><span class="legend-badge legend-compounding-zone"><i class="dot-compounding"></i> Período de Capitalización Pura (Sin aportes)</span></div>
+            </div>
+            <div class="grid-2-cols charts-secondary-row">
+                <div class="card card-doughnut-chart">
+                    <div class="card-header"><h3 class="chart-title"><i data-lucide="pie-chart"></i> Composición del Fondo al Retiro</h3></div>
+                    <div class="doughnut-container-wrapper"><canvas id="doughnutChart"></canvas></div>
+                    <div class="doughnut-summary" id="doughnutSummaryText">El <strong>84.9%</strong> de tu fondo al retiro proviene de la rentabilidad del interés compuesto.</div>
+                </div>
+                <div class="card card-goal-calculator">
+                    <div class="card-header"><h3 class="chart-title"><i data-lucide="target"></i> Simulador de Meta de Retiro</h3></div>
+                    <p class="goal-desc">¿Con cuánto dinero te gustaría retirarte a los <span id="goalEdadRetiroText">65</span> años?</p>
+                    <div class="goal-input-box"><label for="inputTargetAmount">Monto Deseado al Retiro (USD):</label><div class="input-unit-wrapper"><span class="unit-prefix">USD $</span><input type="number" id="inputTargetAmount" min="10000" max="5000000" step="25000" value="500000" class="form-control"></div></div>
+                    <div class="goal-result-box" id="goalResultContent"><div class="goal-res-title">Para alcanzar <strong>USD $<span id="goalTargetDisplay">500.000</span></strong> necesitas:</div><div class="goal-res-highlight"><span class="goal-number" id="goalRequiredSalary">USD $5.246</span><span class="goal-sub">de contrato mensual promedio</span></div><div class="goal-res-details" id="goalRequiredContributions">Tu aporte mensual: <strong>USD $262</strong> | Club: <strong>USD $157</strong></div></div>
+                </div>
+            </div>
+            <div class="card card-table-section">
+                <div class="card-header table-header-flex">
+                    <div><h3 class="chart-title"><i data-lucide="table"></i> Tabla de Proyección Anualizada</h3><p class="chart-subtitle">Evolución año a año de saldos, aportes y rendimientos.</p></div>
+                    <div class="table-actions"><div class="search-input-wrapper"><i data-lucide="search"></i><input type="text" id="tableSearchAge" placeholder="Filtrar por edad o año..." class="form-control form-control-sm"></div></div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-custom" id="projectionTable">
+                        <thead><tr><th>Edad</th><th>Año</th><th>Aporte Anual Jugador</th><th>Aporte Anual Club</th><th>Saldo Jugador (USD)</th><th>Saldo Club (USD)</th><th>Fondo Total (USD)</th><th>Rendimiento Anual</th></tr></thead>
+                        <tbody id="projectionTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="table-footer-pagination"><span id="tableRowsInfo">Mostrando 48 años de proyección</span></div>
+            </div>
+        </section>
+    </main>
+    <footer class="main-footer">
+        <div class="container footer-container">
+            <div class="footer-col brand-col">
+                <div class="footer-logos"><img src="assets/logo_sijubara.png" alt="SIJUBARA" class="footer-logo-sij"></div>
+                <p class="footer-claim">Sindicato de Jugadores de Básquetbol de la República Argentina.<br>Defendiendo el presente y asegurando el futuro de nuestros deportistas.</p>
+            </div>
+            <div class="footer-col partner-col">
+                <div class="mosaic-bar"><span class="m-red-dark"></span><span class="m-red-main"></span><span class="m-red-light"></span><span class="m-red-soft"></span></div>
+                <h4 class="partner-heading">La Segunda Seguros de Retiro S.A.</h4>
+                <p class="ssn-disclaimer">Compañía autorizada por la Superintendencia de Seguros de la Nación.<br>N° de inscripción SSN: 0317 - 0618 - 0117 - 0436<br>Departamento de Orientación y Asistencia al Asegurado: 0800-666-8400</p>
+                <span class="brand-slogan">Primero lo que importa. Lo primero sos vos.</span>
+            </div>
+        </div>
+        <div class="footer-bottom-bar"><div class="container bottom-bar-inner"><span>© <span id="currentYear">2026</span> SIJUBARA & La Segunda Seguros. Todos los derechos reservados.</span><span class="version-tag">Cotizador Actuarial v2.0 | Basado en SIJUBARA.xlsx</span></div></div>
+    </footer>
+    <div id="pdfExportTemplate" class="pdf-export-container" style="display: none;">
+        <div class="pdf-page">
+            <div class="pdf-header">
+                <div class="pdf-header-left"><img src="assets/logo_sijubara.png" alt="SIJUBARA" class="pdf-logo-img"></div>
+                <div class="pdf-header-right"><div class="pdf-partner-name">LA SEGUNDA SEGUROS</div><div class="pdf-partner-sub">PLAN DE RETIRO DEPORTIVO SIJUBARA</div><div class="pdf-date" id="pdfCurrentDate">Fecha: 03/09/2026</div></div>
+            </div>
+            <div class="pdf-mosaic-divider"><span class="p-m-1"></span><span class="p-m-2"></span><span class="p-m-3"></span><span class="p-m-4"></span></div>
+            <div class="pdf-title-block"><h2>PROPUESTA PERSONALIZADA DE SEGURO DE RETIRO</h2><div class="pdf-player-info" id="pdfPlayerInfo"><span><strong>Beneficiario:</strong> <span id="pdfNombreJugador">Jugador Profesional de Básquet</span></span><span><strong>Club / Entidad:</strong> <span id="pdfClubJugador">Club Asociado SIJUBARA</span></span></div></div>
+            <div class="pdf-section-title">1. Parámetros del Plan</div>
+            <table class="pdf-table-params">
+                <tr><td><strong>Contrato Mensual:</strong></td><td id="pdfParamContrato">USD $4.000</td><td><strong>Meses de Aporte por Año:</strong></td><td id="pdfParamMeses">10 meses</td></tr>
+                <tr><td><strong>Edad de Inicio:</strong></td><td id="pdfParamEdadInicio">19 años</td><td><strong>Años de Carrera Activa:</strong></td><td id="pdfParamAniosAporte">18 años (hasta los 37)</td></tr>
+                <tr><td><strong>Edad de Acceso al Fondo:</strong></td><td id="pdfParamEdadRetiro">65 años</td><td><strong>Tasa de Rentabilidad Anual:</strong></td><td id="pdfParamTasa">5.00% TNA</td></tr>
+                <tr><td><strong>Aporte Jugador (5%):</strong></td><td id="pdfParamAporteJ">USD $200 / mes</td><td><strong>Aporte Club (3%):</strong></td><td id="pdfParamAporteC">USD $120 / mes</td></tr>
+            </table>
+            <div class="pdf-section-title">2. Resultados y Fondos Proyectados</div>
+            <div class="pdf-kpis-grid">
+                <div class="pdf-kpi-box box-career"><div class="pdf-kpi-title">FONDO AL FIN DE LA CARRERA (<span id="pdfKpiEdadFin">37</span> AÑOS)</div><div class="pdf-kpi-value" id="pdfKpiTotalFin">USD $92.629</div><div class="pdf-kpi-sub" id="pdfKpiEquivFin">Equivalente a 23.2 meses de contrato</div><div class="pdf-kpi-detail">Jugador: <span id="pdfKpiJFin">USD $57.893</span> | Club: <span id="pdfKpiCFin">USD $34.736</span></div></div>
+                <div class="pdf-kpi-box box-retirement"><div class="pdf-kpi-title">FONDO AL RETIRO DEFINITIVO (<span id="pdfKpiEdadRet">65</span> AÑOS)</div><div class="pdf-kpi-value text-red" id="pdfKpiTotalRet">USD $381.274</div><div class="pdf-kpi-sub" id="pdfKpiEquivRet">Equivalente a 95.3 meses de contrato (~8 años)</div><div class="pdf-kpi-detail">Jugador: <span id="pdfKpiJRet">USD $238.296</span> | Club: <span id="pdfKpiCRet">USD $142.978</span></div></div>
+            </div>
+            <div class="pdf-section-title">3. Síntesis de Capitalización</div>
+            <table class="pdf-table-summary">
+                <thead><tr><th>Concepto</th><th>Aporte Jugador</th><th>Aporte Club</th><th>Total Consolidado</th></tr></thead>
+                <tbody>
+                    <tr><td>Total Aportado en Efectivo</td><td id="pdfSumAporteJ">USD $36.000</td><td id="pdfSumAporteC">USD $21.600</td><td id="pdfSumAporteTot">USD $57.600</td></tr>
+                    <tr><td>Ganancia Neta por Interés Compuesto</td><td id="pdfSumInteresJ">USD $202.296</td><td id="pdfSumInteresC">USD $121.378</td><td class="text-bold text-green" id="pdfSumInteresTot">USD $323.674</td></tr>
+                    <tr class="row-total"><td><strong>Fondo Final Acumulado a los <span id="pdfSumEdadFinal">65</span> años</strong></td><td id="pdfSumFinalJ"><strong>USD $238.296</strong></td><td id="pdfSumFinalC"><strong>USD $142.978</strong></td><td class="text-bold text-red" id="pdfSumFinalTot"><strong>USD $381.274</strong></td></tr>
+                </tbody>
+            </table>
+            <div class="pdf-footer-legal"><p>Documento informativo de simulación actuarial emitido bajo el convenio SIJUBARA - La Segunda Seguros de Retiro S.A. Los cálculos están basados en la capitalización compuesta mensual a la tasa proyectada informada.</p><div class="pdf-signatures"><div class="pdf-sig-box"><div class="sig-line"></div><span>Firma del Jugador</span></div><div class="pdf-sig-box"><div class="sig-line"></div><span>Representante SIJUBARA / Asesor</span></div></div></div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
