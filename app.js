@@ -343,6 +343,15 @@ document.addEventListener('DOMContentLoaded', () => {
         resRentaMensualEstimada.textContent = `${formatCurrencyFull(res.rentaMensual)} / mes`;
         resRentaEdad.textContent = params.edadRetiro;
 
+        // Beneficio Dinámico de Aporte Co-Financiado
+        const benefitCoFinanced = document.getElementById('benefitCoFinanced');
+        if (benefitCoFinanced) {
+            const pctJNum = params.pctJugador * 100;
+            const pctCNum = params.pctClub * 100;
+            const immediateGainPct = pctJNum > 0 ? (pctCNum / pctJNum) * 100 : 0;
+            benefitCoFinanced.innerHTML = `<strong>Aporte Co-Financiado:</strong> Tu club aporta un <strong>${formatDecimal(pctCNum, 1)}%</strong> adicional que incrementa directamente tu patrimonio. Esto significa una ganancia inmediata de <strong>${formatDecimal(immediateGainPct, 1)}%</strong> sobre tu aporte personal.`;
+        }
+
         renderEvolutionChart(res);
         renderDoughnutChart(res);
         renderProjectionTable(res);
