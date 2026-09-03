@@ -358,66 +358,24 @@ body {
 /* ==========================================================================
    Form Controls
    ========================================================================== */
-.form-section-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--sij-blue);
-    margin: 18px 0 10px 0;
-}
 
-.form-section-title svg {
-    width: 15px;
-    height: 15px;
+/* ==========================================================================
+   Modern Input Group & Slider Controls (No text overlap, clean typography)
+   ========================================================================== */
+/* Hide browser native number spin arrows */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
-
-.divider-form {
-    height: 1px;
-    background: var(--neutral-border);
-    margin: 16px 0;
-}
-
-.form-group {
-    margin-bottom: 18px;
-}
-
-.form-group-compact {
-    margin-bottom: 12px;
-}
-
-.form-group label, .form-group-compact label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: #475569;
-    margin-bottom: 6px;
-}
-
-.label-with-value {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.value-badge {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--red-main);
-    background: #fff1f3;
-    padding: 3px 10px;
-    border-radius: var(--radius-full);
-    border: 1px solid #ffe4e8;
+input[type="number"] {
+    -moz-appearance: textfield;
 }
 
 .range-with-input {
     display: grid;
-    grid-template-columns: 1fr 125px;
-    gap: 12px;
+    grid-template-columns: 1fr 140px;
+    gap: 16px;
     align-items: center;
 }
 
@@ -425,7 +383,7 @@ body {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 7px;
+    height: 8px;
     border-radius: 4px;
     background: #e2e8f0;
     outline: none;
@@ -435,35 +393,72 @@ body {
 .custom-range::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: var(--red-main);
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(226, 0, 57, 0.4);
-    transition: transform 0.15s ease;
+    box-shadow: 0 2px 8px rgba(226, 0, 57, 0.4);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .custom-range::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
+    transform: scale(1.2);
+    box-shadow: 0 3px 12px rgba(226, 0, 57, 0.6);
 }
 
 .input-unit-wrapper {
-    position: relative;
     display: flex;
     align-items: center;
+    background: var(--white);
+    border: 1.5px solid #cbd5e1;
+    border-radius: var(--radius-md);
+    padding: 0 10px;
+    height: 42px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.unit-prefix, .unit-suffix {
-    position: absolute;
+.input-unit-wrapper:focus-within {
+    border-color: var(--sij-blue);
+    box-shadow: 0 0 0 3px rgba(45, 79, 143, 0.18);
+}
+
+.input-unit-wrapper .unit-prefix {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    margin-right: 6px;
+    user-select: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.input-unit-wrapper .unit-suffix {
     font-size: 11px;
     font-weight: 700;
-    color: #94a3b8;
-    pointer-events: none;
+    color: #64748b;
+    margin-left: 6px;
+    user-select: none;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-.unit-prefix { left: 10px; }
-.unit-suffix { right: 10px; }
+.input-unit-wrapper input[type="number"],
+.input-unit-wrapper input[type="text"] {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-family: var(--font-family);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--sij-navy);
+    width: 100%;
+    text-align: right;
+}
 
 .form-control {
     width: 100%;
@@ -471,7 +466,7 @@ body {
     font-size: 13px;
     font-weight: 600;
     color: var(--neutral-dark);
-    padding: 9px 12px;
+    padding: 10px 12px;
     border: 1.5px solid #cbd5e1;
     border-radius: var(--radius-md);
     outline: none;
@@ -479,36 +474,9 @@ body {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.input-unit-wrapper .form-control {
-    padding-left: 28px;
-}
-
-.input-unit-wrapper input[type="number"]:has(+ .unit-suffix) {
-    padding-right: 42px;
-    padding-left: 12px;
-}
-
 .form-control:focus {
     border-color: var(--sij-blue);
     box-shadow: 0 0 0 3px rgba(45, 79, 143, 0.15);
-}
-
-.form-control-sm {
-    padding: 7px 10px;
-    font-size: 12px;
-}
-
-.input-helper {
-    display: block;
-    font-size: 11px;
-    color: #64748b;
-    margin-top: 5px;
-}
-
-.grid-2-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
 }
 
 /* ==========================================================================
