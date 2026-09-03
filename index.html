@@ -82,7 +82,7 @@
                     </div>
                     <div class="form-section-title"><i data-lucide="calendar"></i><span>Cronograma y Edades</span></div>
                     <div class="grid-2-cols">
-                        <div class="form-group"><label for="inputEdadInicio">Edad de Inicio</label><div class="input-unit-wrapper"><input type="number" id="inputEdadInicio" min="16" max="45" step="1" value="19"><span class="unit-suffix">años</span></div></div>
+                        <div class="form-group"><label for="inputEdadInicio">Edad de Inicio</label><div class="input-unit-wrapper"><input type="number" id="inputEdadInicio" min="16" max="40" step="1" value="19"><span class="unit-suffix">años</span></div></div>
                         <div class="form-group"><label for="inputAniosAporte">Años Activo</label><div class="input-unit-wrapper"><input type="number" id="inputAniosAporte" min="1" max="30" step="1" value="18"><span class="unit-suffix">años</span></div></div>
                     </div>
                     <div class="timeline-visual-pill">
@@ -95,18 +95,18 @@
                     <div class="form-group">
                         <label for="inputEdadRetiro">Edad de Acceso al Fondo (Retiro)</label>
                         <div class="range-with-input">
-                            <input type="range" id="rangeEdadRetiro" min="40" max="80" step="1" value="65" class="custom-range">
-                            <div class="input-unit-wrapper"><input type="number" id="inputEdadRetiro" min="30" max="90" step="1" value="65"><span class="unit-suffix">años</span></div>
+                            <input type="range" id="rangeEdadRetiro" min="38" max="70" step="1" value="65" class="custom-range">
+                            <div class="input-unit-wrapper"><input type="number" id="inputEdadRetiro" min="38" max="70" step="1" value="65"><span class="unit-suffix">años</span></div>
                         </div>
                     </div>
                     <div class="divider-form"></div>
                     <div class="form-section-title"><i data-lucide="settings-2"></i><span>Aportes y Tasa Actuarial</span></div>
                     <div class="advanced-fixed-section">
                         <div class="grid-2-cols">
-                            <div class="form-group-compact"><label for="inputPctJugador">Aporte Jugador (% sueldo)</label><div class="input-unit-wrapper"><input type="number" id="inputPctJugador" min="1" max="25" step="0.5" value="5.0"><span class="unit-suffix">%</span></div><span class="input-helper" id="calcAporteJugadorMes">USD $200 / mes</span></div>
-                            <div class="form-group-compact"><label for="inputPctClub">Aporte Club (% sueldo)</label><div class="input-unit-wrapper"><input type="number" id="inputPctClub" min="0" max="20" step="0.5" value="3.0"><span class="unit-suffix">%</span></div><span class="input-helper" id="calcAporteClubMes">USD $120 / mes</span></div>
+                            <div class="form-group-compact"><label for="inputPctJugador">Aporte Jugador (% sueldo)</label><div class="input-unit-wrapper"><input type="number" id="inputPctJugador" min="1" max="20" step="0.5" value="5.0"><span class="unit-suffix">%</span></div><span class="input-helper" id="calcAporteJugadorMes">USD $200 / mes</span></div>
+                            <div class="form-group-compact"><label for="inputPctClub">Aporte Club (% sueldo)</label><div class="input-unit-wrapper"><input type="number" id="inputPctClub" min="1" max="20" step="0.5" value="3.0"><span class="unit-suffix">%</span></div><span class="input-helper" id="calcAporteClubMes">USD $120 / mes</span></div>
                         </div>
-                        <div class="form-group-compact" style="margin-top: 8px;"><label for="inputTasaAnual">Tasa Anual Garantizada / Proyectada</label><div class="input-unit-wrapper"><input type="number" id="inputTasaAnual" min="1.0" max="12.0" step="0.25" value="5.0"><span class="unit-suffix">% TNA</span></div><span class="input-helper" id="calcTasaMensual">Tasa mensual equivalente: 0.4074%</span></div>
+                        <div class="form-group-compact" style="margin-top: 8px;"><label for="inputTasaAnual">Tasa Anual Garantizada / Proyectada</label><div class="input-unit-wrapper"><input type="number" id="inputTasaAnual" min="1.0" max="6.0" step="0.5" value="5.0"><span class="unit-suffix">% TNA</span></div><span class="input-helper" id="calcTasaMensual">Tasa mensual equivalente: 0.4074%</span></div>
                     </div>
                 </form>
             </div>
