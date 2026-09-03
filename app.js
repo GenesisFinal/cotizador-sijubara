@@ -227,22 +227,65 @@ document.addEventListener('DOMContentLoaded', () => {
     function getInputs() {
         let salario = parseFloat(inputContrato.value) || 4000;
         let mesesAporte = parseInt(inputMesesAporte.value, 10) || 10;
-        let edadInicio = parseInt(inputEdadInicio.value, 10) || 19;
-        let aniosAporte = parseInt(inputAniosAporte.value, 10) || 18;
-        let edadRetiroVal = parseInt(inputEdadRetiro.value, 10) || 65;
-        let pctJ = (parseFloat(inputPctJugador.value) || 5.0) / 100;
-        let pctC = (parseFloat(inputPctClub.value) || 3.0) / 100;
-        let tasaAnual = (parseFloat(inputTasaAnual.value) || 5.0) / 100;
+        let edadInicio = parseInt(inputEdadInicio.value, 10);
+        let aniosAporte = parseInt(inputAniosAporte.value, 10);
+        let edadRetiroVal = parseInt(inputEdadRetiro.value, 10);
+        let pctJ = parseFloat(inputPctJugador.value);
+        let pctC = parseFloat(inputPctClub.value);
+        let tasaAnual = parseFloat(inputTasaAnual.value);
 
-        if (mesesAporte > 12) mesesAporte = 12;
+        // Validación: Meses de aporte (1 a 12)
+        if (isNaN(mesesAporte)) mesesAporte = 10;
         if (mesesAporte < 1) mesesAporte = 1;
+        if (mesesAporte > 12) mesesAporte = 12;
+
+        // Validación: Edad de Inicio (16 a 40)
+        if (isNaN(edadInicio)) edadInicio = 19;
         if (edadInicio < 16) edadInicio = 16;
+        if (edadInicio > 40) edadInicio = 40;
+
+        // Validación: Años Activo (1 a 30)
+        if (isNaN(aniosAporte)) aniosAporte = 18;
         if (aniosAporte < 1) aniosAporte = 1;
-        if (edadRetiroVal <= edadInicio + aniosAporte) {
-            edadRetiroVal = edadInicio + aniosAporte + 1;
+        if (aniosAporte > 30) aniosAporte = 30;
+
+        // Validación: Edad de Retiro (Mínimo = Inicio + Años + 1, Máximo = 70)
+        const edadFinCarrera = edadInicio + aniosAporte;
+        const minRetiro = edadFinCarrera + 1;
+        const maxRetiro = 70;
+
+        // Sincronizar límites min y max en los controles HTML
+        rangeEdadRetiro.min = minRetiro;
+        rangeEdadRetiro.max = maxRetiro;
+        inputEdadRetiro.min = minRetiro;
+        inputEdadRetiro.max = maxRetiro;
+
+        if (isNaN(edadRetiroVal) || edadRetiroVal < minRetiro) {
+            edadRetiroVal = (65 >= minRetiro && 65 <= maxRetiro) ? 65 : minRetiro;
+            if (edadRetiroVal > maxRetiro) edadRetiroVal = maxRetiro;
+            inputEdadRetiro.value = edadRetiroVal;
+            rangeEdadRetiro.value = edadRetiroVal;
+        } else if (edadRetiroVal > maxRetiro) {
+            edadRetiroVal = maxRetiro;
             inputEdadRetiro.value = edadRetiroVal;
             rangeEdadRetiro.value = edadRetiroVal;
         }
+
+        // Validación: Aporte % Jugador (1% a 20%)
+        if (isNaN(pctJ)) pctJ = 5.0;
+        if (pctJ < 1.0) pctJ = 1.0;
+        if (pctJ > 20.0) pctJ = 20.0;
+
+        // Validación: Aporte % Club (1% a 20%)
+        if (isNaN(pctC)) pctC = 3.0;
+        if (pctC < 1.0) pctC = 1.0;
+        if (pctC > 20.0) pctC = 20.0;
+
+        // Validación: Tasa Anual (1% a 6% en intervalos de 0.5%)
+        if (isNaN(tasaAnual)) tasaAnual = 5.0;
+        if (tasaAnual < 1.0) tasaAnual = 1.0;
+        if (tasaAnual > 6.0) tasaAnual = 6.0;
+        tasaAnual = Math.round(tasaAnual * 2) / 2; // forzar múltiplos de 0.5
 
         return {
             salarioMensual: salario,
@@ -250,9 +293,9 @@ document.addEventListener('DOMContentLoaded', () => {
             aniosAporte: aniosAporte,
             edadInicio: edadInicio,
             edadRetiro: edadRetiroVal,
-            tasaInteresAnual: tasaAnual,
-            pctJugador: pctJ,
-            pctClub: pctC
+            tasaInteresAnual: tasaAnual / 100,
+            pctJugador: pctJ / 100,
+            pctClub: pctC / 100
         };
     }
 
