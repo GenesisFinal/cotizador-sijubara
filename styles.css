@@ -59,7 +59,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 1360px;
+    max-width: 1640px; width: 95%;
     margin: 0 auto;
     padding: 0 24px;
 }
@@ -281,8 +281,8 @@ body {
    ========================================================================== */
 .main-layout {
     display: grid;
-    grid-template-columns: 410px 1fr;
-    gap: 30px;
+    grid-template-columns: 390px 1fr;
+    gap: 36px;
     padding-top: 36px;
     padding-bottom: 60px;
     align-items: start;
@@ -1284,7 +1284,7 @@ body {
 .pdf-player-info {
     display: flex;
     justify-content: center;
-    gap: 30px;
+    gap: 36px;
     font-size: 11px;
 }
 
@@ -1449,4 +1449,11 @@ body {
     .desktop-only {
         display: none;
     }
+}
+.advanced-fixed-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-top: 6px;
 }
