@@ -65,7 +65,7 @@
                     <div class="divider-form"></div>
                     <div class="form-section-title"><i data-lucide="dollar-sign"></i><span>Contrato y Aportes</span></div>
                     <div class="form-group">
-                        <div class="label-with-value"><label for="inputContrato">Contrato Mensual del Jugador</label><span class="value-badge" id="displayContrato">USD $4.000</span></div>
+                        <label for="inputContrato">Contrato Mensual del Jugador</label>
                         <div class="range-with-input">
                             <input type="range" id="rangeContrato" min="500" max="30000" step="250" value="4000" class="custom-range">
                             <div class="input-unit-wrapper"><span class="unit-prefix">USD $</span><input type="number" id="inputContrato" min="100" max="100000" step="100" value="4000" class="form-control form-control-sm"></div>
@@ -73,7 +73,7 @@
                         <span class="input-helper">Sueldo neto promedio percibido por temporada</span>
                     </div>
                     <div class="form-group">
-                        <div class="label-with-value"><label for="inputMesesAporte">Meses de Aporte por Año</label><span class="value-badge" id="displayMesesAporte">10 meses</span></div>
+                        <label for="inputMesesAporte">Meses de Aporte por Año</label>
                         <div class="range-with-input">
                             <input type="range" id="rangeMesesAporte" min="6" max="12" step="1" value="10" class="custom-range">
                             <input type="number" id="inputMesesAporte" min="1" max="12" step="1" value="10" class="form-control form-control-sm">
@@ -93,20 +93,21 @@
                         <div class="timeline-point"><span class="tp-label">Retiro</span><span class="tp-val" id="pillEdadRetiro">65 años</span></div>
                     </div>
                     <div class="form-group">
-                        <div class="label-with-value"><label for="inputEdadRetiro">Edad de Acceso al Fondo (Retiro)</label><span class="value-badge" id="displayEdadRetiro">65 años</span></div>
+                        <label for="inputEdadRetiro">Edad de Acceso al Fondo (Retiro)</label>
                         <div class="range-with-input">
                             <input type="range" id="rangeEdadRetiro" min="40" max="80" step="1" value="65" class="custom-range">
                             <input type="number" id="inputEdadRetiro" min="30" max="90" step="1" value="65" class="form-control form-control-sm">
                         </div>
                     </div>
-                    <details class="advanced-settings-details">
-                        <summary class="advanced-summary"><i data-lucide="settings-2"></i><span>Aportes y Tasa Actuarial</span><i data-lucide="chevron-down" class="chevron-icon"></i></summary>
-                        <div class="advanced-body">
-                            <div class="form-group-compact"><label for="inputPctJugador">Aporte Jugador (% sueldo)</label><div class="input-unit-wrapper"><input type="number" id="inputPctJugador" min="1" max="25" step="0.5" value="5.0" class="form-control"><span class="unit-suffix">%</span></div><span class="input-helper" id="calcAporteJugadorMes">Equivale a: USD $200 / mes</span></div>
-                            <div class="form-group-compact"><label for="inputPctClub">Aporte Club (% sueldo)</label><div class="input-unit-wrapper"><input type="number" id="inputPctClub" min="0" max="20" step="0.5" value="3.0" class="form-control"><span class="unit-suffix">%</span></div><span class="input-helper" id="calcAporteClubMes">Equivale a: USD $120 / mes</span></div>
-                            <div class="form-group-compact"><label for="inputTasaAnual">Tasa Anual Garantizada / Proyectada</label><div class="input-unit-wrapper"><input type="number" id="inputTasaAnual" min="1.0" max="12.0" step="0.25" value="5.0" class="form-control"><span class="unit-suffix">% TNA</span></div><span class="input-helper" id="calcTasaMensual">Tasa mensual equivalente: 0.4074%</span></div>
+                    <div class="divider-form"></div>
+                    <div class="form-section-title"><i data-lucide="settings-2"></i><span>Aportes y Tasa Actuarial</span></div>
+                    <div class="advanced-fixed-section">
+                        <div class="grid-2-cols">
+                            <div class="form-group-compact"><label for="inputPctJugador">Aporte Jugador (% sueldo)</label><div class="input-unit-wrapper"><input type="number" id="inputPctJugador" min="1" max="25" step="0.5" value="5.0" class="form-control"><span class="unit-suffix">%</span></div><span class="input-helper" id="calcAporteJugadorMes">USD $200 / mes</span></div>
+                            <div class="form-group-compact"><label for="inputPctClub">Aporte Club (% sueldo)</label><div class="input-unit-wrapper"><input type="number" id="inputPctClub" min="0" max="20" step="0.5" value="3.0" class="form-control"><span class="unit-suffix">%</span></div><span class="input-helper" id="calcAporteClubMes">USD $120 / mes</span></div>
                         </div>
-                    </details>
+                        <div class="form-group-compact" style="margin-top: 8px;"><label for="inputTasaAnual">Tasa Anual Garantizada / Proyectada</label><div class="input-unit-wrapper"><input type="number" id="inputTasaAnual" min="1.0" max="12.0" step="0.25" value="5.0" class="form-control"><span class="unit-suffix">% TNA</span></div><span class="input-helper" id="calcTasaMensual">Tasa mensual equivalente: 0.4074%</span></div>
+                    </div>
                 </form>
             </div>
             <div class="card card-institutional-info">
