@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link rel="stylesheet" href="styles.css?v=3.2.0">
+    <link rel="stylesheet" href="styles.css?v=3.3.0">
 </head>
 <body>
     <header class="top-header">
@@ -58,144 +58,153 @@
                     <span class="live-indicator"><span class="dot"></span> En tiempo real</span>
                 </div>
                                 <form id="calculatorForm" class="form-inputs" onsubmit="return false;">
-                    <!-- 1. Datos del Jugador -->
-                    <div class="form-section-title">
-                        <i data-lucide="user"></i>
-                        <span>Datos del Jugador (Opcional)</span>
-                    </div>
-                    <div class="grid-2-cols">
-                        <div class="form-group-compact">
-                            <label for="inputNombreJugador">Nombre y Apellido</label>
-                            <input type="text" id="inputNombreJugador" class="form-control" placeholder="Nombre y Apellido">
+                    <!-- 1. IDENTIFICACIÓN -->
+                    <div class="form-block">
+                        <div class="form-section-header">
+                            <span class="section-num">1</span>
+                            <span class="section-title">Datos del Jugador</span>
                         </div>
-                        <div class="form-group-compact">
-                            <label for="inputClubJugador">Club / Equipo Actual</label>
-                            <input type="text" id="inputClubJugador" class="form-control" placeholder="Club de Basquetbol">
-                        </div>
-                    </div>
-
-                    <!-- 2. Contrato y Aportes -->
-                    <div class="form-section-title">
-                        <i data-lucide="dollar-sign"></i>
-                        <span>Contrato y Aportes</span>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="inputContrato">Contrato Mensual del Jugador</label>
-                        <div class="range-with-input">
-                            <input type="range" id="rangeContrato" min="500" max="30000" step="250" value="4000" class="custom-range">
-                            <div class="input-unit-wrapper">
-                                <span class="unit-prefix">USD $</span>
-                                <input type="number" id="inputContrato" min="100" max="100000" step="100" value="4000">
+                        <div class="grid-2-cols">
+                            <div class="form-field">
+                                <label for="inputNombreJugador">Nombre y Apellido</label>
+                                <input type="text" id="inputNombreJugador" class="form-control" placeholder="Nombre y Apellido">
+                            </div>
+                            <div class="form-field">
+                                <label for="inputClubJugador">Club / Entidad</label>
+                                <input type="text" id="inputClubJugador" class="form-control" placeholder="Club de Basquetbol">
                             </div>
                         </div>
-                        <span class="input-helper">Sueldo neto promedio percibido por temporada</span>
                     </div>
 
-                    <div class="form-group">
-                        <label for="inputMesesAporte">Meses de Aporte por Año</label>
-                        <div class="range-with-input">
-                            <input type="range" id="rangeMesesAporte" min="6" max="12" step="1" value="10" class="custom-range">
-                            <div class="input-unit-wrapper">
-                                <input type="number" id="inputMesesAporte" min="1" max="12" step="1" value="10">
-                                <span class="unit-suffix">meses</span>
+                    <!-- 2. CONTRATO Y APORTES -->
+                    <div class="form-block">
+                        <div class="form-section-header">
+                            <span class="section-num">2</span>
+                            <span class="section-title">Contrato y Aportes</span>
+                        </div>
+                        
+                        <div class="form-field">
+                            <div class="field-header">
+                                <label for="inputContrato">Contrato Mensual</label>
+                                <span class="field-desc">Sueldo neto mensual</span>
+                            </div>
+                            <div class="range-row">
+                                <input type="range" id="rangeContrato" min="500" max="30000" step="250" value="4000" class="custom-range">
+                                <div class="input-unit-wrapper">
+                                    <span class="unit-prefix">USD $</span>
+                                    <input type="number" id="inputContrato" min="100" max="100000" step="100" value="4000">
+                                </div>
                             </div>
                         </div>
-                        <span class="input-helper">Meses de duración de la temporada de juego</span>
-                    </div>
 
-                    <!-- 3. Cronograma y Edades -->
-                    <div class="form-section-title">
-                        <i data-lucide="calendar"></i>
-                        <span>Cronograma y Edades</span>
-                    </div>
-
-                    <div class="grid-2-cols">
-                        <div class="form-group-compact">
-                            <label for="inputEdadInicio">Edad de Inicio</label>
-                            <div class="input-unit-wrapper">
-                                <input type="number" id="inputEdadInicio" min="16" max="40" step="1" value="19">
-                                <span class="unit-suffix">años</span>
+                        <div class="form-field">
+                            <div class="field-header">
+                                <label for="inputMesesAporte">Meses de Aporte por Año</label>
+                                <span class="field-desc">Duración de temporada</span>
                             </div>
-                            <span class="input-helper">Inicio de carrera (16-40)</span>
-                        </div>
-                        <div class="form-group-compact">
-                            <label for="inputAniosAporte">Años Activo</label>
-                            <div class="input-unit-wrapper">
-                                <input type="number" id="inputAniosAporte" min="1" max="30" step="1" value="18">
-                                <span class="unit-suffix">años</span>
-                            </div>
-                            <span class="input-helper">Años con aportes (1-30)</span>
-                        </div>
-                    </div>
-
-                    <!-- Línea de tiempo visual -->
-                    <div class="timeline-visual-pill">
-                        <div class="timeline-point">
-                            <span class="tp-label">Inicio</span>
-                            <span class="tp-val" id="pillEdadInicio">19 años</span>
-                        </div>
-                        <div class="timeline-line active-career">
-                            <span class="tl-label" id="pillAniosAporte">18 años aporte</span>
-                        </div>
-                        <div class="timeline-point">
-                            <span class="tp-label">Fin Carrera</span>
-                            <span class="tp-val" id="pillEdadFin">37 años</span>
-                        </div>
-                        <div class="timeline-line compounding-growth">
-                            <span class="tl-label" id="pillAniosCrecimiento">28 años capitalización</span>
-                        </div>
-                        <div class="timeline-point">
-                            <span class="tp-label">Retiro</span>
-                            <span class="tp-val" id="pillEdadRetiro">65 años</span>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 14px;">
-                        <label for="inputEdadRetiro">Edad de Acceso al Fondo (Retiro)</label>
-                        <div class="range-with-input">
-                            <input type="range" id="rangeEdadRetiro" min="38" max="70" step="1" value="65" class="custom-range">
-                            <div class="input-unit-wrapper">
-                                <input type="number" id="inputEdadRetiro" min="38" max="70" step="1" value="65">
-                                <span class="unit-suffix">años</span>
+                            <div class="range-row">
+                                <input type="range" id="rangeMesesAporte" min="6" max="12" step="1" value="10" class="custom-range">
+                                <div class="input-unit-wrapper">
+                                    <input type="number" id="inputMesesAporte" min="1" max="12" step="1" value="10">
+                                    <span class="unit-suffix">meses</span>
+                                </div>
                             </div>
                         </div>
-                        <span class="input-helper">Fin de carrera + 1 año hasta 70 años máx.</span>
-                    </div>
 
-                    <!-- 4. Aportes y Tasa Actuarial -->
-                    <div class="form-section-title">
-                        <i data-lucide="settings-2"></i>
-                        <span>Aportes y Tasa Actuarial</span>
-                    </div>
-
-                    <div class="grid-2-cols">
-                        <div class="form-group-compact">
-                            <label for="inputPctJugador">Aporte Jugador (% sueldo)</label>
-                            <div class="input-unit-wrapper">
-                                <input type="number" id="inputPctJugador" min="1" max="20" step="0.5" value="5.0">
-                                <span class="unit-suffix">%</span>
+                        <div class="grid-2-cols">
+                            <div class="form-field">
+                                <div class="field-header">
+                                    <label for="inputPctJugador">Aporte Jugador</label>
+                                    <span class="pill-calc blue" id="calcAporteJugadorMes">USD $200 / mes</span>
+                                </div>
+                                <div class="input-unit-wrapper">
+                                    <input type="number" id="inputPctJugador" min="1" max="20" step="0.5" value="5.0">
+                                    <span class="unit-suffix">%</span>
+                                </div>
                             </div>
-                            <span class="input-helper" id="calcAporteJugadorMes">USD $200 / mes</span>
-                        </div>
-
-                        <div class="form-group-compact">
-                            <label for="inputPctClub">Aporte Club (% sueldo)</label>
-                            <div class="input-unit-wrapper">
-                                <input type="number" id="inputPctClub" min="1" max="20" step="0.5" value="3.0">
-                                <span class="unit-suffix">%</span>
+                            <div class="form-field">
+                                <div class="field-header">
+                                    <label for="inputPctClub">Aporte Club</label>
+                                    <span class="pill-calc green" id="calcAporteClubMes">USD $120 / mes</span>
+                                </div>
+                                <div class="input-unit-wrapper">
+                                    <input type="number" id="inputPctClub" min="1" max="20" step="0.5" value="3.0">
+                                    <span class="unit-suffix">%</span>
+                                </div>
                             </div>
-                            <span class="input-helper" id="calcAporteClubMes">USD $120 / mes</span>
                         </div>
                     </div>
 
-                    <div class="form-group" style="margin-top: 12px;">
-                        <label for="inputTasaAnual">Tasa Anual Garantizada / Proyectada</label>
-                        <div class="input-unit-wrapper">
-                            <input type="number" id="inputTasaAnual" min="1.0" max="6.0" step="0.5" value="5.0">
-                            <span class="unit-suffix">% TNA</span>
+                    <!-- 3. HORIZONTE TEMPORAL Y TASA -->
+                    <div class="form-block">
+                        <div class="form-section-header">
+                            <span class="section-num">3</span>
+                            <span class="section-title">Horizonte Temporal y Tasa</span>
                         </div>
-                        <span class="input-helper" id="calcTasaMensual">Tasa mensual equivalente: 0.4074% (1% a 6% en pasos de 0.5%)</span>
+
+                        <div class="grid-2-cols">
+                            <div class="form-field">
+                                <label for="inputEdadInicio">Edad de Inicio</label>
+                                <div class="input-unit-wrapper">
+                                    <input type="number" id="inputEdadInicio" min="16" max="40" step="1" value="19">
+                                    <span class="unit-suffix">años</span>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label for="inputAniosAporte">Años Carrera Activa</label>
+                                <div class="input-unit-wrapper">
+                                    <input type="number" id="inputAniosAporte" min="1" max="30" step="1" value="18">
+                                    <span class="unit-suffix">años</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Línea de tiempo visual integrada -->
+                        <div class="timeline-visual-pill">
+                            <div class="timeline-point">
+                                <span class="tp-label">Inicio</span>
+                                <span class="tp-val" id="pillEdadInicio">19 años</span>
+                            </div>
+                            <div class="timeline-line active-career">
+                                <span class="tl-label" id="pillAniosAporte">18 años aporte</span>
+                            </div>
+                            <div class="timeline-point">
+                                <span class="tp-label">Fin Carrera</span>
+                                <span class="tp-val" id="pillEdadFin">37 años</span>
+                            </div>
+                            <div class="timeline-line compounding-growth">
+                                <span class="tl-label" id="pillAniosCrecimiento">28 años capitalización</span>
+                            </div>
+                            <div class="timeline-point">
+                                <span class="tp-label">Retiro</span>
+                                <span class="tp-val" id="pillEdadRetiro">65 años</span>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <div class="field-header">
+                                <label for="inputEdadRetiro">Edad de Acceso al Fondo (Retiro)</label>
+                                <span class="field-desc">Hasta 70 años</span>
+                            </div>
+                            <div class="range-row">
+                                <input type="range" id="rangeEdadRetiro" min="38" max="70" step="1" value="65" class="custom-range">
+                                <div class="input-unit-wrapper">
+                                    <input type="number" id="inputEdadRetiro" min="38" max="70" step="1" value="65">
+                                    <span class="unit-suffix">años</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <div class="field-header">
+                                <label for="inputTasaAnual">Tasa Anual Garantizada</label>
+                                <span class="field-desc" id="calcTasaMensual">Tasa mensual: 0.4074%</span>
+                            </div>
+                            <div class="input-unit-wrapper">
+                                <input type="number" id="inputTasaAnual" min="1.0" max="6.0" step="0.5" value="5.0">
+                                <span class="unit-suffix">% TNA</span>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -299,6 +308,6 @@
         </div>
     </div>
     
-    <script src="app.js?v=3.2.0"></script>
+    <script src="app.js?v=3.3.0"></script>
 </body>
 </html>
