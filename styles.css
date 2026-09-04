@@ -138,8 +138,9 @@ body {
     font-size: 13px;
     font-weight: 800;
     color: var(--red-main);
-    letter-spacing: 0.5px;
-    line-height: 1.1;
+    letter-spacing: 0.6px;
+    line-height: 1.2;
+    margin-top: 2px;
 }
 
 .partner-subtitle {
