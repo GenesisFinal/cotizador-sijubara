@@ -4,7 +4,7 @@
    Basado en el modelo matemático de SIJUBARA.xlsx
    ========================================================================== */
 
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
     if (window.lucide) {
         window.lucide.createIcons();
     }
@@ -1411,4 +1411,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateUI();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
