@@ -824,19 +824,65 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function getDoughnutChartBase64(size = 800) {
-        if (!doughnutChartInstance || !doughnutChartCanvas) return null;
+    function getSquareDoughnutBase64(res, size = 800) {
         try {
             const offCanvas = document.createElement('canvas');
             offCanvas.width = size;
             offCanvas.height = size;
             const ctx = offCanvas.getContext('2d');
+
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, size, size);
-            ctx.drawImage(doughnutChartCanvas, 0, 0, size, size);
+
+            const tot = res.retiro.saldoTotal;
+            const valJ = res.aportes.jugador;
+            const valC = res.aportes.club;
+            const valR = res.intereses;
+
+            if (tot <= 0) return offCanvas.toDataURL('image/png', 1.0);
+
+            const cx = size / 2;
+            const cy = size / 2;
+            const radius = size * 0.35;
+            const strokeWidth = size * 0.16;
+
+            const slices = [
+                { val: valJ, color: '#2d4f8f' },
+                { val: valC, color: '#3ac792' },
+                { val: valR, color: '#e20039' }
+            ];
+
+            let startAngle = -Math.PI / 2;
+            const totalVal = slices.reduce((a, b) => a + b.val, 0);
+
+            slices.forEach(slice => {
+                const sliceAngle = (slice.val / totalVal) * 2 * Math.PI;
+                const endAngle = startAngle + sliceAngle;
+
+                const gap = 0.02;
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, startAngle + gap, endAngle - gap);
+                ctx.lineWidth = strokeWidth;
+                ctx.strokeStyle = slice.color;
+                ctx.stroke();
+
+                startAngle = endAngle;
+            });
+
+            // Center text: Total value
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 36px Sora, Helvetica, Arial, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(formatCurrencyFull(tot), cx, cy - 14);
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = '600 20px Sora, Helvetica, Arial, sans-serif';
+            ctx.fillText('Fondo Total Retiro', cx, cy + 24);
+
             return offCanvas.toDataURL('image/png', 1.0);
         } catch (e) {
-            console.warn('Error capturing doughnut chart:', e);
+            console.warn('Error generating circular doughnut:', e);
             return null;
         }
     }
@@ -1137,7 +1183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 doc.setDrawColor(226, 232, 240);
                 doc.roundedRect(15, 33.5, 180, 66, 2, 2, 'FD');
 
-                const doughnutImgData = getDoughnutChartBase64(800);
+                const doughnutImgData = getSquareDoughnutBase64(res, 800);
                 if (doughnutImgData) {
                     doc.addImage(doughnutImgData, 'PNG', 20, 36.5, 60, 60);
                 }
