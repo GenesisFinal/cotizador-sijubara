@@ -805,8 +805,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!lastSimulationResult) return;
         const res = lastSimulationResult;
 
-        const nombreJugador = inputNombreJugador.value.trim() || 'Jugador Profesional de Básquet';
-        const clubJugador = inputClubJugador.value.trim() || 'Club Asociado SIJUBARA';
+        const nombreJugador = inputNombreJugador.value.trim() || 'Nombre y Apellido';
+        const clubJugador = inputClubJugador.value.trim() || 'Club de Basquetbol';
 
         document.getElementById('pdfNombreJugador').textContent = nombreJugador;
         document.getElementById('pdfClubJugador').textContent = clubJugador;
