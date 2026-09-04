@@ -1144,10 +1144,22 @@ input[type="number"] {
     padding-bottom: 32px;
 }
 
+.footer-logos {
+    background: #ffffff;
+    padding: 8px 18px;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    margin-bottom: 16px;
+}
+
 .footer-logo-sij {
-    height: 42px;
-    filter: brightness(0) invert(1);
-    margin-bottom: 12px;
+    height: 44px;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 .footer-claim {
