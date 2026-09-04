@@ -86,791 +86,130 @@ document.addEventListener('DOMContentLoaded', () => {
     const goalRequiredContributions = document.getElementById('goalRequiredContributions');
 
     // Botones de acción
-    const btnExportPDF = document.getElementById('btnExportPDF');
-    const btnExportExcel = document.getElementById('btnExportExcel');
-    const btnResetDefaults = document.getElementById('btnResetDefaults');
-
-    let evolutionChartInstance = null;
-    let doughnutChartInstance = null;
-    let currentChartView = 'stacked';
-    let lastSimulationResult = null;
-
-    const formatUSD = (val) => '$' + Math.round(val).toLocaleString('es-AR');
-    const formatCurrencyFull = (val) => 'USD $' + Math.round(val).toLocaleString('es-AR');
-    const formatDecimal = (val, decimals = 1) => Number(val).toLocaleString('es-AR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-
-    function calculateRetirementPlan(params) {
-        const {
-            salarioMensual,
-            mesesAporteAnio,
-            aniosAporte,
-            edadInicio,
-            edadRetiro,
-            tasaInteresAnual,
-            pctJugador,
-            pctClub
-        } = params;
-
-        const tasaMensual = Math.pow(1 + tasaInteresAnual, 1 / 12) - 1;
-        const edadFinCarrera = edadInicio + aniosAporte;
-        const aniosTotalesProyeccion = Math.max(edadRetiro - edadInicio + 1, aniosAporte + 1, 50);
-        const mesesTotales = aniosTotalesProyeccion * 12;
-
-        let saldoJugador = 0.0;
-        let saldoClub = 0.0;
-        let totalAporteJugadorPuro = 0.0;
-        let totalAporteClubPuro = 0.0;
-
-        const monthlyData = [];
-        const annualData = [];
-
-        for (let monthIdx = 1; monthIdx <= mesesTotales; monthIdx++) {
-            const anioIdx = Math.floor((monthIdx - 1) / 12) + 1;
-            const mesEnAnio = ((monthIdx - 1) % 12) + 1;
-            const edadActual = edadInicio + anioIdx - 1;
-
-            monthlyData.push({
-                monthIdx,
-                anioIdx,
-                mesEnAnio,
-                edadActual,
-                saldoJugador,
-                saldoClub,
-                saldoTotal: saldoJugador + saldoClub
-            });
-
-            let apJ = 0.0;
-            let apC = 0.0;
-            if (anioIdx <= aniosAporte && mesEnAnio <= mesesAporteAnio) {
-                apJ = salarioMensual * pctJugador;
-                apC = salarioMensual * pctClub;
-                totalAporteJugadorPuro += apJ;
-                totalAporteClubPuro += apC;
-            }
-
-            saldoJugador = saldoJugador * (1 + tasaMensual) + apJ * (1 + tasaMensual / 2);
-            saldoClub = saldoClub * (1 + tasaMensual) + apC * (1 + tasaMensual / 2);
-
-            if (mesEnAnio === 12) {
-                const aporteAnualJ = anioIdx <= aniosAporte ? salarioMensual * pctJugador * mesesAporteAnio : 0;
-                const aporteAnualC = anioIdx <= aniosAporte ? salarioMensual * pctClub * mesesAporteAnio : 0;
-
-                annualData.push({
-                    anio: anioIdx,
-                    edad: edadActual,
-                    esCarreraActiva: anioIdx <= aniosAporte,
-                    esAnioRetiro: edadActual === edadRetiro,
-                    aporteAnualJ,
-                    aporteAnualC,
-                    saldoJugador: saldoJugador,
-                    saldoClub: saldoClub,
-                    saldoTotal: saldoJugador + saldoClub
-                });
-            }
-        }
-
-        const finCarreraMonthIdx = aniosAporte * 12;
-        const estadoFinCarrera = monthlyData[finCarreraMonthIdx] || monthlyData[monthlyData.length - 1];
-
-        const anioRetiroIdx = edadRetiro - edadInicio + 1;
-        const retiroMonthIdx = (anioRetiroIdx - 1) * 12;
-        const estadoRetiro = (retiroMonthIdx >= 0 && retiroMonthIdx < monthlyData.length)
-            ? monthlyData[retiroMonthIdx]
-            : monthlyData[monthlyData.length - 1];
-
-        const totalAportadoEfectivo = (salarioMensual * pctJugador * mesesAporteAnio * aniosAporte) +
-                                      (salarioMensual * pctClub * mesesAporteAnio * aniosAporte);
-        const totalAportadoJugadorEfectivo = salarioMensual * pctJugador * mesesAporteAnio * aniosAporte;
-        const totalAportadoClubEfectivo = salarioMensual * pctClub * mesesAporteAnio * aniosAporte;
-
-        const interesesTotalesRetiro = Math.max(0, estadoRetiro.saldoTotal - totalAportadoEfectivo);
-        const multiplicadorCapital = totalAportadoEfectivo > 0 ? (estadoRetiro.saldoTotal / totalAportadoEfectivo) : 0;
-
-        // Cálculo de Renta Financiera Cierta a 20 años (240 meses) a la tasa técnica del plan
-        const tasaTecnicaAnual = Math.min(tasaInteresAnual, 0.05); // Tasa técnica garantizada de retiro (máx 5% anual)
-        const tasaRentaMensual = Math.pow(1 + tasaTecnicaAnual, 1 / 12) - 1;
-        const mesesRenta = 240; // 20 años x 12 meses
-        const rentaMensualEstimada = estadoRetiro.saldoTotal > 0 
-            ? estadoRetiro.saldoTotal * (tasaRentaMensual / (1 - Math.pow(1 + tasaRentaMensual, -mesesRenta)))
-            : 0;
-
-        return {
-            params,
-            edadFinCarrera,
-            tasaMensual,
-            finCarrera: {
-                saldoJugador: estadoFinCarrera.saldoJugador,
-                saldoClub: estadoFinCarrera.saldoClub,
-                saldoTotal: estadoFinCarrera.saldoTotal,
-                mesesJugador: estadoFinCarrera.saldoJugador / salarioMensual,
-                mesesClub: estadoFinCarrera.saldoClub / salarioMensual,
-                mesesTotal: estadoFinCarrera.saldoTotal / salarioMensual
-            },
-            retiro: {
-                edad: edadRetiro,
-                saldoJugador: estadoRetiro.saldoJugador,
-                saldoClub: estadoRetiro.saldoClub,
-                saldoTotal: estadoRetiro.saldoTotal,
-                mesesJugador: estadoRetiro.saldoJugador / salarioMensual,
-                mesesClub: estadoRetiro.saldoClub / salarioMensual,
-                mesesTotal: estadoRetiro.saldoTotal / salarioMensual
-            },
-            aportes: {
-                jugador: totalAportadoJugadorEfectivo,
-                club: totalAportadoClubEfectivo,
-                total: totalAportadoEfectivo
-            },
-            intereses: interesesTotalesRetiro,
-            multiplicador: multiplicadorCapital,
-            rentaMensual: rentaMensualEstimada,
-            annualData,
-            monthlyData
-        };
-    }
-
-    function getInputs() {
-        let salario = parseFloat(inputContrato.value) || 4000;
-        let mesesAporte = parseInt(inputMesesAporte.value, 10) || 10;
-        let edadInicio = parseInt(inputEdadInicio.value, 10);
-        let aniosAporte = parseInt(inputAniosAporte.value, 10);
-        let edadRetiroVal = parseInt(inputEdadRetiro.value, 10);
-        let pctJ = parseFloat(inputPctJugador.value);
-        let pctC = parseFloat(inputPctClub.value);
-        let tasaAnual = parseFloat(inputTasaAnual.value);
-
-        // Validación: Meses de aporte (1 a 12)
-        if (isNaN(mesesAporte)) mesesAporte = 10;
-        if (mesesAporte < 1) mesesAporte = 1;
-        if (mesesAporte > 12) mesesAporte = 12;
-
-        // Validación: Edad de Inicio (16 a 40)
-        if (isNaN(edadInicio)) edadInicio = 19;
-        if (edadInicio < 16) edadInicio = 16;
-        if (edadInicio > 40) edadInicio = 40;
-
-        // Validación: Años Activo (1 a 30)
-        if (isNaN(aniosAporte)) aniosAporte = 18;
-        if (aniosAporte < 1) aniosAporte = 1;
-        if (aniosAporte > 30) aniosAporte = 30;
-
-        // Validación: Edad de Retiro (Mínimo = Inicio + Años + 1, Máximo = 70)
-        const edadFinCarrera = edadInicio + aniosAporte;
-        const minRetiro = edadFinCarrera + 1;
-        const maxRetiro = 70;
-
-        // Sincronizar límites min y max en los controles HTML
-        rangeEdadRetiro.min = minRetiro;
-        rangeEdadRetiro.max = maxRetiro;
-        inputEdadRetiro.min = minRetiro;
-        inputEdadRetiro.max = maxRetiro;
-
-        if (isNaN(edadRetiroVal) || edadRetiroVal < minRetiro) {
-            edadRetiroVal = (65 >= minRetiro && 65 <= maxRetiro) ? 65 : minRetiro;
-            if (edadRetiroVal > maxRetiro) edadRetiroVal = maxRetiro;
-            inputEdadRetiro.value = edadRetiroVal;
-            rangeEdadRetiro.value = edadRetiroVal;
-        } else if (edadRetiroVal > maxRetiro) {
-            edadRetiroVal = maxRetiro;
-            inputEdadRetiro.value = edadRetiroVal;
-            rangeEdadRetiro.value = edadRetiroVal;
-        }
-
-        // Validación: Aporte % Jugador (1% a 20%)
-        if (isNaN(pctJ)) pctJ = 5.0;
-        if (pctJ < 1.0) pctJ = 1.0;
-        if (pctJ > 20.0) pctJ = 20.0;
-
-        // Validación: Aporte % Club (1% a 20%)
-        if (isNaN(pctC)) pctC = 3.0;
-        if (pctC < 1.0) pctC = 1.0;
-        if (pctC > 20.0) pctC = 20.0;
-
-        // Validación: Tasa Anual (1% a 6% en intervalos de 0.5%)
-        if (isNaN(tasaAnual)) tasaAnual = 5.0;
-        if (tasaAnual < 1.0) tasaAnual = 1.0;
-        if (tasaAnual > 6.0) tasaAnual = 6.0;
-        tasaAnual = Math.round(tasaAnual * 2) / 2; // forzar múltiplos de 0.5
-
-        return {
-            salarioMensual: salario,
-            mesesAporteAnio: mesesAporte,
-            aniosAporte: aniosAporte,
-            edadInicio: edadInicio,
-            edadRetiro: edadRetiroVal,
-            tasaInteresAnual: tasaAnual / 100,
-            pctJugador: pctJ / 100,
-            pctClub: pctC / 100
-        };
-    }
-
-    function updateUI() {
-        const params = getInputs();
-        const res = calculateRetirementPlan(params);
-        lastSimulationResult = res;
-
-        if (displayContrato) displayContrato.textContent = formatCurrencyFull(params.salarioMensual);
-        if (displayMesesAporte) displayMesesAporte.textContent = `${params.mesesAporteAnio} meses`;
-        if (displayEdadRetiro) displayEdadRetiro.textContent = `${params.edadRetiro} años`;
-
-        calcAporteJugadorMes.textContent = `Equivale a: USD $${Math.round(params.salarioMensual * params.pctJugador)} / mes`;
-        calcAporteClubMes.textContent = `Equivale a: USD $${Math.round(params.salarioMensual * params.pctClub)} / mes`;
-        calcTasaMensual.textContent = `Tasa mensual equivalente: ${(res.tasaMensual * 100).toFixed(4)}%`;
-
-        pillEdadInicio.textContent = `${params.edadInicio} años`;
-        pillAniosAporte.textContent = `${params.aniosAporte} años aporte`;
-        pillEdadFin.textContent = `${res.edadFinCarrera} años`;
-        const aniosCap = Math.max(0, params.edadRetiro - res.edadFinCarrera);
-        pillAniosCrecimiento.textContent = `${aniosCap} años sin aportes`;
-        pillEdadRetiro.textContent = `${params.edadRetiro} años`;
-
-        resEdadFinCarrera.textContent = res.edadFinCarrera;
-        resFondoTotalFinCarrera.textContent = formatUSD(res.finCarrera.saldoTotal);
-        resMultiplicadorFinCarrera.innerHTML = `<i data-lucide="award"></i> Equivalente a <strong>${formatDecimal(res.finCarrera.mesesTotal)} meses</strong> de sueldo`;
-        resFondoJugadorFinCarrera.textContent = formatCurrencyFull(res.finCarrera.saldoJugador);
-        resMesesJugadorFinCarrera.textContent = `(${formatDecimal(res.finCarrera.mesesJugador)} meses)`;
-        resFondoClubFinCarrera.textContent = formatCurrencyFull(res.finCarrera.saldoClub);
-        resMesesClubFinCarrera.textContent = `(${formatDecimal(res.finCarrera.mesesClub)} meses)`;
-
-        resEdadRetiro.textContent = params.edadRetiro;
-        resFondoTotalRetiro.textContent = formatUSD(res.retiro.saldoTotal);
-        const aniosSueldoEquiv = (res.retiro.mesesTotal / 12).toFixed(1);
-        resMultiplicadorRetiro.innerHTML = `<i data-lucide="trending-up"></i> Equivalente a <strong>${formatDecimal(res.retiro.mesesTotal)} meses</strong> de sueldo (~${aniosSueldoEquiv} años)`;
-        resFondoJugadorRetiro.textContent = formatCurrencyFull(res.retiro.saldoJugador);
-        resMesesJugadorRetiro.textContent = `(${formatDecimal(res.retiro.mesesJugador)} meses)`;
-        resFondoClubRetiro.textContent = formatCurrencyFull(res.retiro.saldoClub);
-        resMesesClubRetiro.textContent = `(${formatDecimal(res.retiro.mesesClub)} meses)`;
-
-        resTotalAportadoPuro.textContent = formatCurrencyFull(res.aportes.total);
-        resSubAportes.textContent = `Jugador: $${Math.round(res.aportes.jugador).toLocaleString('es-AR')} | Club: $${Math.round(res.aportes.club).toLocaleString('es-AR')}`;
-        resInteresesGanados.textContent = formatCurrencyFull(res.intereses);
-        resMultiplicadorGanancia.innerHTML = `El fondo se multiplicó <strong>${formatDecimal(res.multiplicador)}x</strong> veces`;
-        resRentaMensualEstimada.textContent = `${formatCurrencyFull(res.rentaMensual)} / mes`;
-        resRentaEdad.textContent = params.edadRetiro;
-
-        // Beneficio Dinámico de Aporte Co-Financiado
-        const benefitCoFinanced = document.getElementById('benefitCoFinanced');
-        if (benefitCoFinanced) {
-            const pctJNum = params.pctJugador * 100;
-            const pctCNum = params.pctClub * 100;
-            const immediateGainPct = pctJNum > 0 ? (pctCNum / pctJNum) * 100 : 0;
-            benefitCoFinanced.innerHTML = `<strong>Aporte Co-Financiado:</strong> Tu club aporta un <strong>${formatDecimal(pctCNum, 1)}%</strong> adicional que incrementa directamente tu patrimonio. Esto significa una ganancia inmediata de <strong>${formatDecimal(immediateGainPct, 1)}%</strong> sobre tu aporte personal.`;
-        }
-
-        renderEvolutionChart(res);
-        renderDoughnutChart(res);
-        renderProjectionTable(res);
-        updateGoalCalculator(res);
-
-        if (window.lucide) {
-            window.lucide.createIcons();
-        }
-    }
-
-    // Plugin personalizado de Chart.js para dibujar las 2 zonas de etapas y la línea de hito
-    const periodZonesPlugin = {
-        id: 'periodZones',
-        beforeDraw: (chart) => {
-            const { ctx, chartArea, scales: { x, y } } = chart;
-            if (!chartArea || !lastSimulationResult) return;
-
+        const btnExportPDF = document.getElementById('btnExportPDF');
+    if (btnExportPDF) {
+        btnExportPDF.addEventListener('click', () => {
+            if (!lastSimulationResult) return;
             const res = lastSimulationResult;
-            const edadFin = res.edadFinCarrera;
-            const labels = chart.data.labels;
-            const finIndex = labels.indexOf(`Edad ${edadFin}`);
-            if (finIndex === -1) return;
 
-            const xFin = x.getPixelForValue(finIndex);
-            const xStart = chartArea.left;
-            const xEnd = chartArea.right;
-            const height = chartArea.bottom - chartArea.top;
+            const nombreJugador = inputNombreJugador.value.trim() || 'Nombre y Apellido';
+            const clubJugador = inputClubJugador.value.trim() || 'Club de Basquetbol';
 
-            ctx.save();
+            // 1. Llenar datos en el template de PDF
+            document.getElementById('pdfNombreJugador').textContent = nombreJugador;
+            document.getElementById('pdfClubJugador').textContent = clubJugador;
+            document.getElementById('pdfCurrentDate').textContent = `Fecha: ${new Date().toLocaleDateString('es-AR')}`;
 
-            // 1. Zona 1: Período Activo de Aportes (Sombreado Azul Suave)
-            ctx.fillStyle = 'rgba(45, 79, 143, 0.08)';
-            ctx.fillRect(xStart, chartArea.top, xFin - xStart, height);
+            document.getElementById('pdfParamContrato').textContent = formatCurrencyFull(res.params.salarioMensual);
+            document.getElementById('pdfParamMeses').textContent = `${res.params.mesesAporteAnio} meses / año`;
+            document.getElementById('pdfParamEdadInicio').textContent = `${res.params.edadInicio} años`;
+            document.getElementById('pdfParamAniosAporte').textContent = `${res.params.aniosAporte} años (hasta los ${res.edadFinCarrera})`;
+            document.getElementById('pdfParamEdadRetiro').textContent = `${res.params.edadRetiro} años`;
+            document.getElementById('pdfParamTasa').textContent = `${(res.params.tasaInteresAnual * 100).toFixed(2)}% TNA`;
+            document.getElementById('pdfParamAporteJ').textContent = `USD $${Math.round(res.params.salarioMensual * res.params.pctJugador)} / mes (${(res.params.pctJugador*100).toFixed(1)}%)`;
+            document.getElementById('pdfParamAporteC').textContent = `USD $${Math.round(res.params.salarioMensual * res.params.pctClub)} / mes (${(res.params.pctClub*100).toFixed(1)}%)`;
 
-            // Etiqueta superior Zona 1
-            ctx.font = '700 11px Sora, sans-serif';
-            ctx.fillStyle = '#1e3a8a';
-            ctx.textAlign = 'center';
-            const midZone1 = (xStart + xFin) / 2;
-            if (xFin - xStart > 90) {
-                ctx.fillText('Etapa Activa de Aportes', midZone1, chartArea.top + 22);
+            // Hito Fin Carrera
+            document.getElementById('pdfKpiEdadFin').textContent = res.edadFinCarrera;
+            document.getElementById('pdfKpiTotalFin').textContent = formatCurrencyFull(res.finCarrera.saldoTotal);
+            document.getElementById('pdfKpiEquivFin').textContent = `Equivalente a ${formatDecimal(res.finCarrera.mesesTotal)} meses de sueldo`;
+            document.getElementById('pdfKpiJFin').textContent = formatCurrencyFull(res.finCarrera.saldoJugador);
+            document.getElementById('pdfKpiCFin').textContent = formatCurrencyFull(res.finCarrera.saldoClub);
+
+            // Hito Retiro
+            document.getElementById('pdfKpiEdadRet').textContent = res.params.edadRetiro;
+            document.getElementById('pdfKpiTotalRet').textContent = formatCurrencyFull(res.retiro.saldoTotal);
+            document.getElementById('pdfKpiEquivRet').textContent = `Equivalente a ${formatDecimal(res.retiro.mesesTotal)} meses de sueldo (~${(res.retiro.mesesTotal/12).toFixed(1)} años)`;
+            document.getElementById('pdfKpiJRet').textContent = formatCurrencyFull(res.retiro.saldoJugador);
+            document.getElementById('pdfKpiCRet').textContent = formatCurrencyFull(res.retiro.saldoClub);
+
+            // Cuadro de Renta Mensual a 20 Años
+            const pdfRentaMensual = document.getElementById('pdfRentaMensual');
+            const pdfRentaEdad = document.getElementById('pdfRentaEdad');
+            if (pdfRentaMensual) pdfRentaMensual.textContent = formatCurrencyFull(res.rentaMensualEstimada);
+            if (pdfRentaEdad) pdfRentaEdad.textContent = res.params.edadRetiro;
+
+            // Tabla de Síntesis
+            const totFinal = res.retiro.saldoTotal;
+            const intTot = res.intereses;
+            const intJ = totFinal > 0 ? intTot * (res.aportes.jugador / res.aportes.total) : 0;
+            const intC = totFinal > 0 ? intTot * (res.aportes.club / res.aportes.total) : 0;
+
+            document.getElementById('pdfSumAporteJ').textContent = formatCurrencyFull(res.aportes.jugador);
+            document.getElementById('pdfSumAporteC').textContent = formatCurrencyFull(res.aportes.club);
+            document.getElementById('pdfSumAporteTot').textContent = formatCurrencyFull(res.aportes.total);
+
+            document.getElementById('pdfSumInteresJ').textContent = formatCurrencyFull(intJ);
+            document.getElementById('pdfSumInteresC').textContent = formatCurrencyFull(intC);
+            document.getElementById('pdfSumInteresTot').textContent = formatCurrencyFull(res.intereses);
+
+            document.getElementById('pdfSumEdadFinal').textContent = res.params.edadRetiro;
+            document.getElementById('pdfSumFinalJ').textContent = formatCurrencyFull(res.retiro.saldoJugador);
+            document.getElementById('pdfSumFinalC').textContent = formatCurrencyFull(res.retiro.saldoClub);
+            document.getElementById('pdfSumFinalTot').textContent = formatCurrencyFull(res.retiro.saldoTotal);
+
+            // 2. Renderizar imágenes de los gráficos (Evolución y Torta de Composición)
+            const pdfEvolutionChartImg = document.getElementById('pdfEvolutionChartImg');
+            const pdfDoughnutChartImg = document.getElementById('pdfDoughnutChartImg');
+
+            if (evolutionChartCanvas && pdfEvolutionChartImg) {
+                pdfEvolutionChartImg.src = evolutionChartCanvas.toDataURL('image/png', 1.0);
+            }
+            if (doughnutChartCanvas && pdfDoughnutChartImg) {
+                pdfDoughnutChartImg.src = doughnutChartCanvas.toDataURL('image/png', 1.0);
             }
 
-            // 2. Zona 2: Período de Capitalización Pura (Sombreado Rojo/Rosa Suave)
-            ctx.fillStyle = 'rgba(226, 0, 57, 0.05)';
-            ctx.fillRect(xFin, chartArea.top, xEnd - xFin, height);
+            // 3. Llenar datos de la leyenda de la torta en PDF
+            const pctJ = totFinal > 0 ? (res.aportes.jugador / totFinal) * 100 : 0;
+            const pctC = totFinal > 0 ? (res.aportes.club / totFinal) * 100 : 0;
+            const pctR = totFinal > 0 ? (res.intereses / totFinal) * 100 : 0;
 
-            // Etiqueta superior Zona 2
-            ctx.font = '700 11px Sora, sans-serif';
-            ctx.fillStyle = '#b91f38';
-            ctx.textAlign = 'center';
-            const midZone2 = (xFin + xEnd) / 2;
-            if (xEnd - xFin > 110) {
-                ctx.fillText('Capitalización Pura (Sin Aportes)', midZone2, chartArea.top + 22);
-            }
+            const elPctJ = document.getElementById('pdfPctJugadorText');
+            const elValJ = document.getElementById('pdfValJugadorText');
+            const elPctC = document.getElementById('pdfPctClubText');
+            const elValC = document.getElementById('pdfValClubText');
+            const elPctR = document.getElementById('pdfPctRendText');
+            const elValR = document.getElementById('pdfValRendText');
 
-            // 3. Línea vertical divisoria en Fin de Carrera
-            ctx.strokeStyle = '#2d4f8f';
-            ctx.lineWidth = 2.5;
-            ctx.setLineDash([5, 4]);
-            ctx.beginPath();
-            ctx.moveTo(xFin, chartArea.top);
-            ctx.lineTo(xFin, chartArea.bottom);
-            ctx.stroke();
+            if (elPctJ) elPctJ.textContent = `${pctJ.toFixed(1)}%`;
+            if (elValJ) elValJ.textContent = formatCurrencyFull(res.aportes.jugador);
+            if (elPctC) elPctC.textContent = `${pctC.toFixed(1)}%`;
+            if (elValC) elValC.textContent = formatCurrencyFull(res.aportes.club);
+            if (elPctR) elPctR.textContent = `${pctR.toFixed(1)}%`;
+            if (elValR) elValR.textContent = formatCurrencyFull(res.intereses);
 
-            // 4. Badge indicador de Fin de Carrera sobre la línea divisoria
-            ctx.setLineDash([]);
-            const badgeText = `Fin Carrera (${edadFin} años)`;
-            ctx.font = 'bold 10px Sora, sans-serif';
-            const textWidth = ctx.measureText(badgeText).width;
-            const badgeWidth = textWidth + 16;
-            const badgeHeight = 22;
-            const badgeX = Math.min(Math.max(xFin - badgeWidth / 2, chartArea.left + 4), chartArea.right - badgeWidth - 4);
-            const badgeY = chartArea.top + 34;
+            // 4. Mostrar template temporalmente y generar PDF
+            const element = document.getElementById('pdfExportTemplate');
+            element.style.display = 'block';
 
-            // Fondo del badge
-            ctx.fillStyle = '#162447';
-            ctx.beginPath();
-            if (ctx.roundRect) {
-                ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 5);
-            } else {
-                ctx.rect(badgeX, badgeY, badgeWidth, badgeHeight);
-            }
-            ctx.fill();
+            const opt = {
+                margin: [6, 8, 6, 8],
+                filename: `Propuesta_Retiro_SIJUBARA_${nombreJugador.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            };
 
-            // Texto del badge
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.fillText(badgeText, badgeX + badgeWidth / 2, badgeY + 15);
-
-            ctx.restore();
-        }
-    };
-
-    function renderEvolutionChart(res) {
-        if (!evolutionChartCanvas) return;
-
-        const labels = res.annualData.map(d => `Edad ${d.edad}`);
-        const dataJugador = res.annualData.map(d => Math.round(d.saldoJugador));
-        const dataClub = res.annualData.map(d => Math.round(d.saldoClub));
-        const dataTotal = res.annualData.map(d => Math.round(d.saldoTotal));
-
-        // Encontrar índices de puntos clave para resaltarlos
-        const finIndex = labels.indexOf(`Edad ${res.edadFinCarrera}`);
-        const retIndex = labels.indexOf(`Edad ${res.retiro.edad}`);
-
-        const pointRadii = labels.map((_, idx) => (idx === finIndex || idx === retIndex) ? 6 : 2);
-        const pointHoverRadii = labels.map((_, idx) => (idx === finIndex || idx === retIndex) ? 9 : 5);
-
-        let datasets = [];
-
-        if (currentChartView === 'stacked') {
-            datasets = [
-                {
-                    label: 'Fondo Jugador (USD)',
-                    data: dataJugador,
-                    backgroundColor: 'rgba(45, 79, 143, 0.50)',
-                    borderColor: '#2d4f8f',
-                    borderWidth: 2.5,
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: pointRadii,
-                    pointHoverRadius: pointHoverRadii,
-                    pointBackgroundColor: '#2d4f8f'
-                },
-                {
-                    label: 'Fondo Aporte Club (USD)',
-                    data: dataClub,
-                    backgroundColor: 'rgba(58, 199, 146, 0.50)',
-                    borderColor: '#3ac792',
-                    borderWidth: 2.5,
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: pointRadii,
-                    pointHoverRadius: pointHoverRadii,
-                    pointBackgroundColor: '#3ac792'
-                }
-            ];
-        } else {
-            datasets = [
-                {
-                    label: 'Fondo Total Acumulado (USD)',
-                    data: dataTotal,
-                    borderColor: '#e20039',
-                    backgroundColor: 'rgba(226, 0, 57, 0.10)',
-                    borderWidth: 3,
-                    fill: false,
-                    tension: 0.3,
-                    pointRadius: pointRadii.map(r => r === 6 ? 7 : 3),
-                    pointHoverRadius: pointHoverRadii,
-                    pointBackgroundColor: '#e20039'
-                },
-                {
-                    label: 'Fondo Jugador (USD)',
-                    data: dataJugador,
-                    borderColor: '#2d4f8f',
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    borderDash: [5, 4],
-                    tension: 0.3,
-                    pointRadius: 0
-                },
-                {
-                    label: 'Fondo Club (USD)',
-                    data: dataClub,
-                    borderColor: '#3ac792',
-                    backgroundColor: 'transparent',
-                    borderWidth: 2,
-                    borderDash: [5, 4],
-                    tension: 0.3,
-                    pointRadius: 0
-                }
-            ];
-        }
-
-        if (evolutionChartInstance) {
-            evolutionChartInstance.data.labels = labels;
-            evolutionChartInstance.data.datasets = datasets;
-            evolutionChartInstance.options.scales.x.stacked = (currentChartView === 'stacked');
-            evolutionChartInstance.options.scales.y.stacked = (currentChartView === 'stacked');
-            evolutionChartInstance.update();
-        } else {
-            const ctx = evolutionChartCanvas.getContext('2d');
-            evolutionChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                },
-                plugins: [periodZonesPlugin],
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                font: { family: 'Sora', size: 12, weight: '600' },
-                                usePointStyle: true,
-                                boxWidth: 8,
-                                padding: 16
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: '#162447',
-                            titleFont: { family: 'Sora', size: 13, weight: '700' },
-                            bodyFont: { family: 'Sora', size: 12 },
-                            padding: 12,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: function(context) {
-                                    return ` ${context.dataset.label}: USD $${context.parsed.y.toLocaleString('es-AR')}`;
-                                },
-                                afterTitle: function(context) {
-                                    const edadNum = parseInt(context[0].label.replace('Edad ', ''), 10);
-                                    if (edadNum <= res.edadFinCarrera) {
-                                        return 'Período Activo de Aportes';
-                                    } else {
-                                        return 'Período de Capitalización Pura (Sin Aportes)';
-                                    }
-                                }
-                            }
+            setTimeout(() => {
+                if (window.html2pdf) {
+                    window.html2pdf().set(opt).from(element).save().then(() => {
+                        element.style.display = 'none';
+                        if (window.confetti) {
+                            window.confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
                         }
-                    },
-                    scales: {
-                        x: {
-                            stacked: (currentChartView === 'stacked'),
-                            grid: { display: false },
-                            ticks: {
-                                font: { family: 'Sora', size: 11 },
-                                maxTicksLimit: 12
-                            }
-                        },
-                        y: {
-                            stacked: (currentChartView === 'stacked'),
-                            grid: { color: '#f1f5f9' },
-                            ticks: {
-                                font: { family: 'Sora', size: 11 },
-                                callback: function(value) {
-                                    return '$' + (value >= 1000 ? (value / 1000).toFixed(0) + 'k' : value);
-                                }
-                            }
-                        }
-                    }
+                    }).catch(err => {
+                        console.error('Error generating PDF:', err);
+                        element.style.display = 'none';
+                        window.print();
+                    });
+                } else {
+                    window.print();
+                    element.style.display = 'none';
                 }
-            });
-        }
-    }
-
-    function renderDoughnutChart(res) {
-        if (!doughnutChartCanvas) return;
-
-        const valJugador = Math.round(res.aportes.jugador);
-        const valClub = Math.round(res.aportes.club);
-        const valIntereses = Math.round(res.intereses);
-        const total = valJugador + valClub + valIntereses;
-
-        const pctInteres = total > 0 ? ((valIntereses / total) * 100).toFixed(1) : 0;
-        doughnutSummaryText.innerHTML = `El <strong>${pctInteres}%</strong> de tu fondo al retiro proviene de la rentabilidad del interés compuesto.`;
-
-        const chartData = {
-            labels: ['Aportes del Jugador', 'Aportes del Club', 'Intereses y Rendimientos'],
-            datasets: [{
-                data: [valJugador, valClub, valIntereses],
-                backgroundColor: ['#2d4f8f', '#3ac792', '#e20039'],
-                hoverOffset: 6,
-                borderWidth: 2,
-                borderColor: '#ffffff'
-            }]
-        };
-
-        if (doughnutChartInstance) {
-            doughnutChartInstance.data = chartData;
-            doughnutChartInstance.update();
-        } else {
-            const ctx = doughnutChartCanvas.getContext('2d');
-            doughnutChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: { family: 'Sora', size: 11, weight: '600' },
-                                usePointStyle: true,
-                                padding: 14
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: '#162447',
-                            callbacks: {
-                                label: function(context) {
-                                    const val = context.raw;
-                                    const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
-                                    return ` ${context.label}: USD $${val.toLocaleString('es-AR')} (${pct}%)`;
-                                }
-                            }
-                        }
-                    },
-                    cutout: '62%'
-                }
-            });
-        }
-    }
-
-    function renderProjectionTable(res) {
-        if (!projectionTableBody) return;
-
-        const filter = (tableSearchAge.value || '').trim().toLowerCase();
-        let rowsHtml = '';
-        let count = 0;
-
-        let prevSaldo = 0;
-        res.annualData.forEach((row) => {
-            const matchFilter = filter === '' ||
-                                String(row.edad).includes(filter) ||
-                                String(row.anio).includes(filter);
-
-            if (matchFilter) {
-                count++;
-                const rendAnual = Math.max(0, row.saldoTotal - prevSaldo - row.aporteAnualJ - row.aporteAnualC);
-                
-                let rowClass = '';
-                if (row.edad === res.edadFinCarrera) rowClass = 'highlight-career';
-                if (row.edad === res.retiro.edad) rowClass = 'highlight-retirement';
-
-                rowsHtml += `
-                    <tr class="${rowClass}">
-                        <td><strong>${row.edad} años</strong></td>
-                        <td>Año ${row.anio}</td>
-                        <td>${row.aporteAnualJ > 0 ? '$' + Math.round(row.aporteAnualJ).toLocaleString('es-AR') : '-'}</td>
-                        <td>${row.aporteAnualC > 0 ? '$' + Math.round(row.aporteAnualC).toLocaleString('es-AR') : '-'}</td>
-                        <td>$${Math.round(row.saldoJugador).toLocaleString('es-AR')}</td>
-                        <td>$${Math.round(row.saldoClub).toLocaleString('es-AR')}</td>
-                        <td><strong>$${Math.round(row.saldoTotal).toLocaleString('es-AR')}</strong></td>
-                        <td class="text-green">+$${Math.round(rendAnual).toLocaleString('es-AR')}</td>
-                    </tr>
-                `;
-            }
-            prevSaldo = row.saldoTotal;
-        });
-
-        projectionTableBody.innerHTML = rowsHtml;
-        tableRowsInfo.textContent = `Mostrando ${count} de ${res.annualData.length} años de proyección`;
-    }
-
-    function updateGoalCalculator(res) {
-        const target = parseFloat(inputTargetAmount.value) || 500000;
-        goalEdadRetiroText.textContent = res.params.edadRetiro;
-        goalTargetDisplay.textContent = Math.round(target).toLocaleString('es-AR');
-
-        const currentSalary = res.params.salarioMensual;
-        const currentFundAtRetirement = res.retiro.saldoTotal;
-
-        if (currentFundAtRetirement > 0) {
-            const factorUnitario = currentFundAtRetirement / currentSalary;
-            const requiredSalary = target / factorUnitario;
-            const requiredPlayerContrib = requiredSalary * res.params.pctJugador;
-            const requiredClubContrib = requiredSalary * res.params.pctClub;
-
-            goalRequiredSalary.textContent = formatCurrencyFull(requiredSalary);
-            goalRequiredContributions.innerHTML = `Tu aporte mensual: <strong>USD $${Math.round(requiredPlayerContrib).toLocaleString('es-AR')}</strong> | Club: <strong>USD $${Math.round(requiredClubContrib).toLocaleString('es-AR')}</strong>`;
-        }
-    }
-
-    function bindInputSync(rangeEl, inputEl) {
-        rangeEl.addEventListener('input', () => {
-            inputEl.value = rangeEl.value;
-            updateUI();
-        });
-        inputEl.addEventListener('input', () => {
-            rangeEl.value = inputEl.value;
-            updateUI();
+            }, 120);
         });
     }
-
-    bindInputSync(rangeContrato, inputContrato);
-    bindInputSync(rangeMesesAporte, inputMesesAporte);
-    bindInputSync(rangeEdadRetiro, inputEdadRetiro);
-
-    [inputEdadInicio, inputAniosAporte, inputPctJugador, inputPctClub, inputTasaAnual].forEach(el => {
-        el.addEventListener('input', updateUI);
-    });
-
-    inputTargetAmount.addEventListener('input', () => {
-        if (lastSimulationResult) updateGoalCalculator(lastSimulationResult);
-    });
-
-    tableSearchAge.addEventListener('input', () => {
-        if (lastSimulationResult) renderProjectionTable(lastSimulationResult);
-    });
-
-    if (chartViewToggle) {
-        chartViewToggle.querySelectorAll('.btn-toggle').forEach(btn => {
-            btn.addEventListener('click', () => {
-                chartViewToggle.querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentChartView = btn.getAttribute('data-view');
-                if (lastSimulationResult) renderEvolutionChart(lastSimulationResult);
-            });
-        });
-    }
-
-    btnResetDefaults.addEventListener('click', () => {
-        inputContrato.value = 4000;
-        rangeContrato.value = 4000;
-        inputMesesAporte.value = 10;
-        rangeMesesAporte.value = 10;
-        inputEdadInicio.value = 19;
-        inputAniosAporte.value = 18;
-        inputEdadRetiro.value = 65;
-        rangeEdadRetiro.value = 65;
-        inputPctJugador.value = 5.0;
-        inputPctClub.value = 3.0;
-        inputTasaAnual.value = 5.0;
-        inputTargetAmount.value = 500000;
-        tableSearchAge.value = '';
-        updateUI();
-    });
-
-    if (btnExportExcel) btnExportExcel.addEventListener('click', () => {
-        if (!lastSimulationResult) return;
-        const res = lastSimulationResult;
-
-        let csv = 'Edad;Año;Aporte Anual Jugador (USD);Aporte Anual Club (USD);Saldo Jugador (USD);Saldo Club (USD);Fondo Total (USD)\r\n';
-        res.annualData.forEach(r => {
-            csv += `${r.edad};${r.anio};${Math.round(r.aporteAnualJ)};${Math.round(r.aporteAnualC)};${Math.round(r.saldoJugador)};${Math.round(r.saldoClub)};${Math.round(r.saldoTotal)}\r\n`;
-        });
-
-        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Proyeccion_Retiro_SIJUBARA_${new Date().toISOString().slice(0,10)}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-    });
-
-    btnExportPDF.addEventListener('click', () => {
-        if (!lastSimulationResult) return;
-        const res = lastSimulationResult;
-
-        const nombreJugador = inputNombreJugador.value.trim() || 'Nombre y Apellido';
-        const clubJugador = inputClubJugador.value.trim() || 'Club de Basquetbol';
-
-        document.getElementById('pdfNombreJugador').textContent = nombreJugador;
-        document.getElementById('pdfClubJugador').textContent = clubJugador;
-        document.getElementById('pdfCurrentDate').textContent = `Fecha: ${new Date().toLocaleDateString('es-AR')}`;
-
-        document.getElementById('pdfParamContrato').textContent = formatCurrencyFull(res.params.salarioMensual);
-        document.getElementById('pdfParamMeses').textContent = `${res.params.mesesAporteAnio} meses / año`;
-        document.getElementById('pdfParamEdadInicio').textContent = `${res.params.edadInicio} años`;
-        document.getElementById('pdfParamAniosAporte').textContent = `${res.params.aniosAporte} años (hasta los ${res.edadFinCarrera})`;
-        document.getElementById('pdfParamEdadRetiro').textContent = `${res.params.edadRetiro} años`;
-        document.getElementById('pdfParamTasa').textContent = `${(res.params.tasaInteresAnual * 100).toFixed(2)}% TNA`;
-        document.getElementById('pdfParamAporteJ').textContent = `USD $${Math.round(res.params.salarioMensual * res.params.pctJugador)} / mes (${(res.params.pctJugador*100).toFixed(1)}%)`;
-        document.getElementById('pdfParamAporteC').textContent = `USD $${Math.round(res.params.salarioMensual * res.params.pctClub)} / mes (${(res.params.pctClub*100).toFixed(1)}%)`;
-
-        document.getElementById('pdfKpiEdadFin').textContent = res.edadFinCarrera;
-        document.getElementById('pdfKpiTotalFin').textContent = formatCurrencyFull(res.finCarrera.saldoTotal);
-        document.getElementById('pdfKpiEquivFin').textContent = `Equivalente a ${formatDecimal(res.finCarrera.mesesTotal)} meses de sueldo`;
-        document.getElementById('pdfKpiJFin').textContent = formatCurrencyFull(res.finCarrera.saldoJugador);
-        document.getElementById('pdfKpiCFin').textContent = formatCurrencyFull(res.finCarrera.saldoClub);
-
-        document.getElementById('pdfKpiEdadRet').textContent = res.params.edadRetiro;
-        document.getElementById('pdfKpiTotalRet').textContent = formatCurrencyFull(res.retiro.saldoTotal);
-        document.getElementById('pdfKpiEquivRet').textContent = `Equivalente a ${formatDecimal(res.retiro.mesesTotal)} meses de sueldo (~${(res.retiro.mesesTotal/12).toFixed(1)} años)`;
-        document.getElementById('pdfKpiJRet').textContent = formatCurrencyFull(res.retiro.saldoJugador);
-        document.getElementById('pdfKpiCRet').textContent = formatCurrencyFull(res.retiro.saldoClub);
-
-        document.getElementById('pdfSumAporteJ').textContent = formatCurrencyFull(res.aportes.jugador);
-        document.getElementById('pdfSumAporteC').textContent = formatCurrencyFull(res.aportes.club);
-        document.getElementById('pdfSumAporteTot').textContent = formatCurrencyFull(res.aportes.total);
-
-        const intJ = Math.max(0, res.retiro.saldoJugador - res.aportes.jugador);
-        const intC = Math.max(0, res.retiro.saldoClub - res.aportes.club);
-        document.getElementById('pdfSumInteresJ').textContent = formatCurrencyFull(intJ);
-        document.getElementById('pdfSumInteresC').textContent = formatCurrencyFull(intC);
-        document.getElementById('pdfSumInteresTot').textContent = formatCurrencyFull(res.intereses);
-
-        document.getElementById('pdfSumEdadFinal').textContent = res.params.edadRetiro;
-        document.getElementById('pdfSumFinalJ').textContent = formatCurrencyFull(res.retiro.saldoJugador);
-        document.getElementById('pdfSumFinalC').textContent = formatCurrencyFull(res.retiro.saldoClub);
-        document.getElementById('pdfSumFinalTot').textContent = formatCurrencyFull(res.retiro.saldoTotal);
-
-        const element = document.getElementById('pdfExportTemplate');
-        element.style.display = 'block';
-
-        const opt = {
-            margin: 10,
-            filename: `Propuesta_Retiro_SIJUBARA_${nombreJugador.replace(/\s+/g, '_')}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        if (window.html2pdf) {
-            window.html2pdf().set(opt).from(element).save().then(() => {
-                element.style.display = 'none';
-                if (window.confetti) {
-                    window.confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
-                }
-            });
-        } else {
-            element.style.display = 'none';
-            window.print();
-        }
-    });
 
     updateUI();
 });
