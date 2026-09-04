@@ -84,6 +84,15 @@ function initApp() {
         return 'USD $' + Math.round(val).toLocaleString('es-AR');
     }
 
+    function formatCurrencyAmount(val) {
+        return '$' + Math.round(val).toLocaleString('es-AR');
+    }
+
+    function formatDecimal(val, decimals = 1) {
+        if (val === null || val === undefined || isNaN(val)) return '0.0';
+        return Number(val).toFixed(decimals);
+    }
+
     function sanitizeAndEnforceField(inputEl, minVal, maxVal, step = null, isFloat = false, allowUnderMinWhileTyping = false) {
         if (!inputEl) return minVal;
         let raw = inputEl.value.toString().trim();
@@ -667,12 +676,7 @@ function initApp() {
     }
 
     function updateUI(isFinalEvent = false) {
-        if (typeof Chart === 'undefined') {
-            setTimeout(() => updateUI(isFinalEvent), 50);
-            return;
-        }
         const inputs = getInputs(isFinalEvent);
-        const inputs = getInputs();
         const res = calculateSimulation(inputs);
         lastSimulationResult = res;
 
@@ -688,7 +692,7 @@ function initApp() {
         if (calcAporteClubMes) calcAporteClubMes.textContent = `${formatCurrencyFull(aporteCMes)} / mes`;
 
         const tasaMensualPct = ((Math.pow(1 + inputs.tasaInteresAnual, 1 / 12) - 1) * 100).toFixed(4);
-        if (calcTasaMensual) calcTasaMensual.textContent = `Tasa mensual equivalente: ${tasaMensualPct}% (1% a 6% en pasos de 0.5%)`;
+        if (calcTasaMensual) calcTasaMensual.textContent = `Tasa mensual equivalente: ${tasaMensualPct}%`;
 
         if (benefitCoFinanced) {
             const pctJ = inputs.pctJugador * 100;
@@ -698,7 +702,7 @@ function initApp() {
         }
 
         if (resEdadFinCarrera) resEdadFinCarrera.textContent = res.edadFinCarrera;
-        if (resFondoTotalFinCarrera) resFondoTotalFinCarrera.textContent = formatCurrencyFull(res.finCarrera.saldoTotal);
+        if (resFondoTotalFinCarrera) resFondoTotalFinCarrera.textContent = formatCurrencyAmount(res.finCarrera.saldoTotal);
         if (resMultiplicadorFinCarrera) {
             resMultiplicadorFinCarrera.innerHTML = `<i data-lucide="award"></i> Equivalente a <strong>${formatDecimal(res.finCarrera.mesesTotal)} meses</strong> de sueldo`;
         }
@@ -708,7 +712,7 @@ function initApp() {
         if (resMesesClubFinCarrera) resMesesClubFinCarrera.textContent = `(${formatDecimal(res.finCarrera.mesesClub)} meses)`;
 
         if (resEdadRetiro) resEdadRetiro.textContent = inputs.edadRetiro;
-        if (resFondoTotalRetiro) resFondoTotalRetiro.textContent = formatCurrencyFull(res.retiro.saldoTotal);
+        if (resFondoTotalRetiro) resFondoTotalRetiro.textContent = formatCurrencyAmount(res.retiro.saldoTotal);
         if (resMultiplicadorRetiro) {
             const aniosEq = (res.retiro.mesesTotal / 12).toFixed(1);
             resMultiplicadorRetiro.innerHTML = `<i data-lucide="trending-up"></i> Equivalente a <strong>${formatDecimal(res.retiro.mesesTotal)} meses</strong> de sueldo (~${aniosEq} años)`;
@@ -729,18 +733,6 @@ function initApp() {
         if (resRentaEdad) resRentaEdad.textContent = inputs.edadRetiro;
 
         try {
-            renderEvolutionChart(res);
-        } catch (e) {
-            console.error('Error in renderEvolutionChart:', e);
-        }
-
-        try {
-            renderDoughnutChart(res);
-        } catch (e) {
-            console.error('Error in renderDoughnutChart:', e);
-        }
-
-        try {
             updateGoalCalculator(res);
         } catch (e) {
             console.error('Error in updateGoalCalculator:', e);
@@ -750,6 +742,27 @@ function initApp() {
             renderTable(res.annualData, tableSearchAge ? tableSearchAge.value : '');
         } catch (e) {
             console.error('Error in renderTable:', e);
+        }
+
+        if (typeof Chart !== 'undefined') {
+            try {
+                renderEvolutionChart(res);
+            } catch (e) {
+                console.error('Error in renderEvolutionChart:', e);
+            }
+
+            try {
+                renderDoughnutChart(res);
+            } catch (e) {
+                console.error('Error in renderDoughnutChart:', e);
+            }
+        } else {
+            setTimeout(() => {
+                if (typeof Chart !== 'undefined' && lastSimulationResult) {
+                    renderEvolutionChart(lastSimulationResult);
+                    renderDoughnutChart(lastSimulationResult);
+                }
+            }, 100);
         }
 
         if (window.lucide) {
