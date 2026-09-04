@@ -290,35 +290,163 @@
         <div class="footer-bottom-bar"><div class="container bottom-bar-inner"><span>© <span id="currentYear">2026</span> SIJUBARA. Todos los derechos reservados.</span><span class="version-tag">Cotizador Actuarial v2.0 | A medida para SIJUBARA</span></div></div>
     </footer>
     <div id="pdfExportTemplate" class="pdf-export-container" style="display: none;">
-        <div class="pdf-page">
+        <!-- PÁGINA 1: Parámetros, Fondos Proyectados, Renta a 20 Años y Síntesis -->
+        <div class="pdf-page pdf-page-1">
             <div class="pdf-header">
                 <div class="pdf-header-left"><img src="assets/logo_sijubara.png" alt="SIJUBARA" class="pdf-logo-img"></div>
-                <div class="pdf-header-right"><div class="pdf-partner-name">SEGURO DE RETIRO</div><div class="pdf-partner-sub">PLAN DE RETIRO DEPORTIVO SIJUBARA</div><div class="pdf-date" id="pdfCurrentDate">Fecha: 03/09/2026</div></div>
+                <div class="pdf-header-right">
+                    <div class="pdf-partner-name">SEGURO DE RETIRO</div>
+                    <div class="pdf-partner-sub">PLAN DE RETIRO DEPORTIVO SIJUBARA</div>
+                    <div class="pdf-date" id="pdfCurrentDate">Fecha: 03/09/2026</div>
+                </div>
             </div>
+            
             <div class="pdf-mosaic-divider"><span class="p-m-1"></span><span class="p-m-2"></span><span class="p-m-3"></span><span class="p-m-4"></span></div>
-            <div class="pdf-title-block"><h2>PROPUESTA PERSONALIZADA DE SEGURO DE RETIRO</h2><div class="pdf-player-info" id="pdfPlayerInfo"><span><strong>Beneficiario:</strong> <span id="pdfNombreJugador">Jugador Profesional de Básquet</span></span><span><strong>Club / Entidad:</strong> <span id="pdfClubJugador">Club Asociado SIJUBARA</span></span></div></div>
+
+            <div class="pdf-title-block">
+                <h2>PROPUESTA PERSONALIZADA DE SEGURO DE RETIRO</h2>
+                <div class="pdf-player-info" id="pdfPlayerInfo">
+                    <span><strong>Beneficiario:</strong> <span id="pdfNombreJugador">Nombre y Apellido</span></span>
+                    <span><strong>Club / Entidad:</strong> <span id="pdfClubJugador">Club de Basquetbol</span></span>
+                </div>
+            </div>
+
             <div class="pdf-section-title">1. Parámetros del Plan</div>
             <table class="pdf-table-params">
-                <tr><td><strong>Contrato Mensual:</strong></td><td id="pdfParamContrato">USD $4.000</td><td><strong>Meses de Aporte por Año:</strong></td><td id="pdfParamMeses">10 meses</td></tr>
-                <tr><td><strong>Edad de Inicio:</strong></td><td id="pdfParamEdadInicio">19 años</td><td><strong>Años de Carrera Activa:</strong></td><td id="pdfParamAniosAporte">18 años (hasta los 37)</td></tr>
-                <tr><td><strong>Edad de Acceso al Fondo:</strong></td><td id="pdfParamEdadRetiro">65 años</td><td><strong>Tasa de Rentabilidad Anual:</strong></td><td id="pdfParamTasa">5.00% TNA</td></tr>
-                <tr><td><strong>Aporte Jugador (5%):</strong></td><td id="pdfParamAporteJ">USD $200 / mes</td><td><strong>Aporte Club (3%):</strong></td><td id="pdfParamAporteC">USD $120 / mes</td></tr>
+                <tr>
+                    <td><strong>Contrato Mensual:</strong></td>
+                    <td id="pdfParamContrato">USD $4.000</td>
+                    <td><strong>Meses de Aporte por Año:</strong></td>
+                    <td id="pdfParamMeses">10 meses</td>
+                </tr>
+                <tr>
+                    <td><strong>Edad de Inicio:</strong></td>
+                    <td id="pdfParamEdadInicio">19 años</td>
+                    <td><strong>Años de Carrera Activa:</strong></td>
+                    <td id="pdfParamAniosAporte">18 años (hasta los 37)</td>
+                </tr>
+                <tr>
+                    <td><strong>Edad de Acceso al Fondo:</strong></td>
+                    <td id="pdfParamEdadRetiro">65 años</td>
+                    <td><strong>Tasa de Rentabilidad Anual:</strong></td>
+                    <td id="pdfParamTasa">5.00% TNA</td>
+                </tr>
+                <tr>
+                    <td><strong>Aporte Jugador:</strong></td>
+                    <td id="pdfParamAporteJ">USD $200 / mes (5%)</td>
+                    <td><strong>Aporte Club:</strong></td>
+                    <td id="pdfParamAporteC">USD $120 / mes (3%)</td>
+                </tr>
             </table>
-            <div class="pdf-section-title">2. Resultados y Fondos Proyectados</div>
-            <div class="pdf-kpis-grid">
-                <div class="pdf-kpi-box box-career"><div class="pdf-kpi-title">FONDO AL FIN DE LA CARRERA (<span id="pdfKpiEdadFin">37</span> AÑOS)</div><div class="pdf-kpi-value" id="pdfKpiTotalFin">USD $92.629</div><div class="pdf-kpi-sub" id="pdfKpiEquivFin">Equivalente a 23.2 meses de contrato</div><div class="pdf-kpi-detail">Jugador: <span id="pdfKpiJFin">USD $57.893</span> | Club: <span id="pdfKpiCFin">USD $34.736</span></div></div>
-                <div class="pdf-kpi-box box-retirement"><div class="pdf-kpi-title">FONDO AL RETIRO DEFINITIVO (<span id="pdfKpiEdadRet">65</span> AÑOS)</div><div class="pdf-kpi-value text-red" id="pdfKpiTotalRet">USD $381.274</div><div class="pdf-kpi-sub" id="pdfKpiEquivRet">Equivalente a 95.3 meses de contrato (~8 años)</div><div class="pdf-kpi-detail">Jugador: <span id="pdfKpiJRet">USD $238.296</span> | Club: <span id="pdfKpiCRet">USD $142.978</span></div></div>
+
+            <div class="pdf-section-title">2. Fondos Proyectados y Renta de Retiro</div>
+            <div class="pdf-kpis-3-grid">
+                <div class="pdf-kpi-box box-career">
+                    <div class="pdf-kpi-title">FONDO FIN DE CARRERA (<span id="pdfKpiEdadFin">37</span> AÑOS)</div>
+                    <div class="pdf-kpi-value" id="pdfKpiTotalFin">USD $92.629</div>
+                    <div class="pdf-kpi-sub" id="pdfKpiEquivFin">Equiv. a 23.2 meses de contrato</div>
+                    <div class="pdf-kpi-detail">Jugador: <span id="pdfKpiJFin">USD $57.893</span> | Club: <span id="pdfKpiCFin">USD $34.736</span></div>
+                </div>
+
+                <div class="pdf-kpi-box box-retirement">
+                    <div class="pdf-kpi-title">FONDO AL RETIRO (<span id="pdfKpiEdadRet">65</span> AÑOS)</div>
+                    <div class="pdf-kpi-value text-red" id="pdfKpiTotalRet">USD $381.274</div>
+                    <div class="pdf-kpi-sub" id="pdfKpiEquivRet">Equiv. a 95.3 meses de contrato (~8 años)</div>
+                    <div class="pdf-kpi-detail">Jugador: <span id="pdfKpiJRet">USD $238.296</span> | Club: <span id="pdfKpiCRet">USD $142.978</span></div>
+                </div>
+
+                <div class="pdf-kpi-box box-renta">
+                    <div class="pdf-kpi-title">RENTA MENSUAL (20 AÑOS / 240 MESES)</div>
+                    <div class="pdf-kpi-value text-green" id="pdfRentaMensual">USD $2.516 / mes</div>
+                    <div class="pdf-kpi-sub">A partir de los <span id="pdfRentaEdad">65</span> años</div>
+                    <div class="pdf-kpi-detail">Renta financiera cierta mensual garantizada</div>
+                </div>
             </div>
+
             <div class="pdf-section-title">3. Síntesis de Capitalización</div>
             <table class="pdf-table-summary">
-                <thead><tr><th>Concepto</th><th>Aporte Jugador</th><th>Aporte Club</th><th>Total Consolidado</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Aporte Jugador</th>
+                        <th>Aporte Club</th>
+                        <th>Total Consolidado</th>
+                    </tr>
+                </thead>
                 <tbody>
-                    <tr><td>Total Aportado en Efectivo</td><td id="pdfSumAporteJ">USD $36.000</td><td id="pdfSumAporteC">USD $21.600</td><td id="pdfSumAporteTot">USD $57.600</td></tr>
-                    <tr><td>Ganancia Neta por Interés Compuesto</td><td id="pdfSumInteresJ">USD $202.296</td><td id="pdfSumInteresC">USD $121.378</td><td class="text-bold text-green" id="pdfSumInteresTot">USD $323.674</td></tr>
-                    <tr class="row-total"><td><strong>Fondo Final Acumulado a los <span id="pdfSumEdadFinal">65</span> años</strong></td><td id="pdfSumFinalJ"><strong>USD $238.296</strong></td><td id="pdfSumFinalC"><strong>USD $142.978</strong></td><td class="text-bold text-red" id="pdfSumFinalTot"><strong>USD $381.274</strong></td></tr>
+                    <tr>
+                        <td>Total Aportado en Efectivo</td>
+                        <td id="pdfSumAporteJ">USD $36.000</td>
+                        <td id="pdfSumAporteC">USD $21.600</td>
+                        <td id="pdfSumAporteTot">USD $57.600</td>
+                    </tr>
+                    <tr>
+                        <td>Ganancia Neta por Interés Compuesto</td>
+                        <td id="pdfSumInteresJ">USD $202.296</td>
+                        <td id="pdfSumInteresC">USD $121.378</td>
+                        <td class="text-bold text-green" id="pdfSumInteresTot">USD $323.674</td>
+                    </tr>
+                    <tr class="row-total">
+                        <td><strong>Fondo Final Acumulado a los <span id="pdfSumEdadFinal">65</span> años</strong></td>
+                        <td id="pdfSumFinalJ"><strong>USD $238.296</strong></td>
+                        <td id="pdfSumFinalC"><strong>USD $142.978</strong></td>
+                        <td class="text-bold text-red" id="pdfSumFinalTot"><strong>USD $381.274</strong></td>
+                    </tr>
                 </tbody>
             </table>
-            <div class="pdf-footer-legal"><p>Documento informativo de simulación actuarial emitido bajo el convenio SIJUBARA. El presente no constituye oferta ni garantía de cumplimiento. Se trata en una proyección bajo las condiciones, y supuestos establecidos, con fines ilustrativos. Ni la empresa de seguros, ni SIJUBARA garantiza que las rentabilidades se cumplan en el futuro.</p><div class="pdf-signatures"><div class="pdf-sig-box"><div class="sig-line"></div><span>Firma del Jugador</span></div><div class="pdf-sig-box"><div class="sig-line"></div><span>Representante SIJUBARA / Asesor</span></div></div></div>
+        </div>
+
+        <!-- Salto de Página para Gráficos y Marco Legal -->
+        <div class="html2pdf__page-break" style="page-break-before: always; height: 1px;"></div>
+
+        <!-- PÁGINA 2: Gráficos de Evolución, Torta de Composición y Firma Asesor -->
+        <div class="pdf-page pdf-page-2">
+            <div class="pdf-header">
+                <div class="pdf-header-left"><img src="assets/logo_sijubara.png" alt="SIJUBARA" class="pdf-logo-img"></div>
+                <div class="pdf-header-right">
+                    <div class="pdf-partner-name">SEGURO DE RETIRO</div>
+                    <div class="pdf-partner-sub">PROYECCIÓN GRÁFICA Y ESTRUCTURA</div>
+                </div>
+            </div>
+            
+            <div class="pdf-mosaic-divider"><span class="p-m-1"></span><span class="p-m-2"></span><span class="p-m-3"></span><span class="p-m-4"></span></div>
+
+            <div class="pdf-section-title">4. Proyección Visual y Etapas de Capitalización</div>
+            <div class="pdf-chart-block">
+                <div class="pdf-chart-title">Evolución del Fondo (Etapa de Aportes vs Capitalización Pura)</div>
+                <div class="pdf-img-chart-wrap">
+                    <img id="pdfEvolutionChartImg" class="pdf-chart-img" alt="Evolución del Fondo">
+                </div>
+            </div>
+
+            <div class="pdf-section-title" style="margin-top: 12px;">5. Estructura del Fondo al Retiro</div>
+            <div class="pdf-doughnut-grid">
+                <div class="pdf-doughnut-chart-wrap">
+                    <img id="pdfDoughnutChartImg" class="pdf-doughnut-img" alt="Composición del Fondo">
+                </div>
+                <div class="pdf-doughnut-legend-wrap">
+                    <div class="pdf-legend-card">
+                        <div class="pdf-leg-item"><span class="leg-dot dot-player"></span> <strong>Aporte Jugador:</strong> <span id="pdfPctJugadorText">9.4%</span> (<span id="pdfValJugadorText">USD $36.000</span>)</div>
+                        <div class="pdf-leg-item"><span class="leg-dot dot-club"></span> <strong>Aporte Club:</strong> <span id="pdfPctClubText">5.7%</span> (<span id="pdfValClubText">USD $21.600</span>)</div>
+                        <div class="pdf-leg-item"><span class="leg-dot dot-gain"></span> <strong>Rendimiento Compuesto:</strong> <span id="pdfPctRendText">84.9%</span> (<span id="pdfValRendText">USD $323.674</span>)</div>
+                    </div>
+                    <p class="pdf-doughnut-note">
+                        El interés compuesto multiplica significativamente el capital: más del <strong>80%</strong> del fondo final proviene de los rendimientos generados.
+                    </p>
+                </div>
+            </div>
+
+            <div class="pdf-footer-legal" style="margin-top: 18px;">
+                <p>
+                    Documento informativo de simulación actuarial emitido bajo el convenio SIJUBARA. El presente no constituye oferta ni garantía de cumplimiento. Se trata en una proyección bajo las condiciones, y supuestos establecidos, con fines ilustrativos. Ni la empresa de seguros, ni SIJUBARA garantiza que las rentabilidades se cumplan en el futuro.
+                </p>
+                <div class="pdf-signatures" style="justify-content: center; margin-top: 22px;">
+                    <div class="pdf-sig-box">
+                        <div class="sig-line"></div>
+                        <span>Representante SIJUBARA / Asesor</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <script src="app.js"></script>
