@@ -906,13 +906,13 @@ document.addEventListener('DOMContentLoaded', () => {
             element.style.display = 'block';
 
             const opt = {
-                margin: [6, 8, 6, 8],
-                filename: `Propuesta_Retiro_SIJUBARA_${nombreJugador.replace(/\s+/g, '_')}.pdf`,
+                margin: [4, 6, 4, 6],
+                filename: Propuesta_Retiro_SIJUBARA_.pdf,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, logging: false },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['css', 'legacy'] }
-            };
+                pagebreak: { mode: ['css', 'legacy'], before: '.pdf-page-2' }
+            }
 
             setTimeout(() => {
                 if (window.html2pdf) {
