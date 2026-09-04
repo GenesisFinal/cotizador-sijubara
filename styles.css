@@ -924,9 +924,25 @@ input[type="number"] {
 }
 
 .legend-badge {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.legend-active-zone {
+    background: rgba(45, 79, 143, 0.08);
+    border: 1px solid rgba(45, 79, 143, 0.25);
+    color: var(--sij-blue);
+}
+
+.legend-compounding-zone {
+    background: rgba(226, 0, 57, 0.06);
+    border: 1px solid rgba(226, 0, 57, 0.25);
+    color: var(--red-main);
 }
 
 .dot-active {
