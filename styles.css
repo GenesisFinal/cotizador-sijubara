@@ -1211,11 +1211,18 @@ input[type="number"] {
    PDF Template & Print Styles (Strict 2-Page A4 Executive Report)
    ========================================================================== */
 .pdf-export-container {
+    position: fixed;
+    top: 0;
+    left: -12000px;
+    width: 760px;
     background: #ffffff;
     color: #1e293b;
     font-family: 'Sora', sans-serif;
     padding: 0;
     margin: 0;
+    z-index: -9999;
+    opacity: 1;
+    pointer-events: none;
 }
 
 .pdf-page {
