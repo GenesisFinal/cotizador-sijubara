@@ -84,34 +84,50 @@ document.addEventListener('DOMContentLoaded', () => {
         return 'USD $' + Math.round(val).toLocaleString('es-AR');
     }
 
-    function formatDecimal(val, decimals = 1) {
-        return val.toLocaleString('es-AR', {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals
-        });
+    function sanitizeAndEnforceField(inputEl, minVal, maxVal, step = null, isFloat = false, allowUnderMinWhileTyping = false) {
+        if (!inputEl) return minVal;
+        let raw = inputEl.value.toString().trim();
+        if (raw === '') {
+            if (!allowUnderMinWhileTyping) inputEl.value = minVal;
+            return minVal;
+        }
+
+        let val = isFloat ? parseFloat(raw) : parseInt(raw, 10);
+        if (isNaN(val)) {
+            val = minVal;
+            inputEl.value = minVal;
+            return minVal;
+        }
+
+        // Clamp Max immediately
+        if (val > maxVal) {
+            val = maxVal;
+            inputEl.value = isFloat ? val.toFixed(1) : val;
+        }
+
+        // Clamp Min if not typing
+        if (!allowUnderMinWhileTyping && val < minVal) {
+            val = minVal;
+            inputEl.value = isFloat ? val.toFixed(1) : val;
+        }
+
+        if (step && !allowUnderMinWhileTyping) {
+            val = Math.round(val / step) * step;
+            if (isFloat) {
+                inputEl.value = val.toFixed(1);
+            } else {
+                inputEl.value = val;
+            }
+        }
+
+        return Math.max(minVal, Math.min(maxVal, val));
     }
 
-    function getInputs() {
-        let salario = parseFloat(inputContrato.value) || 4000;
-        let mesesAporte = parseInt(inputMesesAporte.value, 10) || 10;
-        let edadInicio = parseInt(inputEdadInicio.value, 10);
-        let aniosAporte = parseInt(inputAniosAporte.value, 10);
-        let edadRetiroVal = parseInt(inputEdadRetiro.value, 10);
-        let pctJ = parseFloat(inputPctJugador.value);
-        let pctC = parseFloat(inputPctClub.value);
-        let tasaAnual = parseFloat(inputTasaAnual.value);
-
-        if (isNaN(mesesAporte)) mesesAporte = 10;
-        if (mesesAporte < 1) mesesAporte = 1;
-        if (mesesAporte > 12) mesesAporte = 12;
-
-        if (isNaN(edadInicio)) edadInicio = 19;
-        if (edadInicio < 16) edadInicio = 16;
-        if (edadInicio > 40) edadInicio = 40;
-
-        if (isNaN(aniosAporte)) aniosAporte = 18;
-        if (aniosAporte < 1) aniosAporte = 1;
-        if (aniosAporte > 30) aniosAporte = 30;
+    function getInputs(isFinalEvent = false) {
+        let salario = sanitizeAndEnforceField(inputContrato, 500, 100000, 50, false, !isFinalEvent);
+        let mesesAporte = sanitizeAndEnforceField(inputMesesAporte, 1, 12, 1, false, !isFinalEvent);
+        let edadInicio = sanitizeAndEnforceField(inputEdadInicio, 16, 40, 1, false, !isFinalEvent);
+        let aniosAporte = sanitizeAndEnforceField(inputAniosAporte, 1, 30, 1, false, !isFinalEvent);
 
         const edadFinCarrera = edadInicio + aniosAporte;
         const minRetiro = edadFinCarrera + 1;
@@ -122,29 +138,14 @@ document.addEventListener('DOMContentLoaded', () => {
         inputEdadRetiro.min = minRetiro;
         inputEdadRetiro.max = maxRetiro;
 
-        if (isNaN(edadRetiroVal) || edadRetiroVal < minRetiro) {
-            edadRetiroVal = (65 >= minRetiro && 65 <= maxRetiro) ? 65 : minRetiro;
-            if (edadRetiroVal > maxRetiro) edadRetiroVal = maxRetiro;
-            inputEdadRetiro.value = edadRetiroVal;
-            rangeEdadRetiro.value = edadRetiroVal;
-        } else if (edadRetiroVal > maxRetiro) {
-            edadRetiroVal = maxRetiro;
-            inputEdadRetiro.value = edadRetiroVal;
-            rangeEdadRetiro.value = edadRetiroVal;
-        }
+        let edadRetiroVal = sanitizeAndEnforceField(inputEdadRetiro, minRetiro, maxRetiro, 1, false, !isFinalEvent);
+        if (rangeEdadRetiro) rangeEdadRetiro.value = edadRetiroVal;
+        if (rangeContrato) rangeContrato.value = Math.min(salario, 30000);
+        if (rangeMesesAporte) rangeMesesAporte.value = mesesAporte;
 
-        if (isNaN(pctJ)) pctJ = 5.0;
-        if (pctJ < 1.0) pctJ = 1.0;
-        if (pctJ > 20.0) pctJ = 20.0;
-
-        if (isNaN(pctC)) pctC = 3.0;
-        if (pctC < 1.0) pctC = 1.0;
-        if (pctC > 20.0) pctC = 20.0;
-
-        if (isNaN(tasaAnual)) tasaAnual = 5.0;
-        if (tasaAnual < 1.0) tasaAnual = 1.0;
-        if (tasaAnual > 6.0) tasaAnual = 6.0;
-        tasaAnual = Math.round(tasaAnual * 2) / 2;
+        let pctJ = sanitizeAndEnforceField(inputPctJugador, 1.0, 20.0, 0.5, true, !isFinalEvent);
+        let pctC = sanitizeAndEnforceField(inputPctClub, 1.0, 20.0, 0.5, true, !isFinalEvent);
+        let tasaAnual = sanitizeAndEnforceField(inputTasaAnual, 1.0, 6.0, 0.5, true, !isFinalEvent);
 
         return {
             salarioMensual: salario,
@@ -665,7 +666,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function updateUI() {
+    function updateUI(isFinalEvent = false) {
+        const inputs = getInputs(isFinalEvent);
         const inputs = getInputs();
         const res = calculateSimulation(inputs);
         lastSimulationResult = res;
@@ -732,18 +734,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function handleLiveInput() {
+        updateUI(false);
+    }
+
+    function handleFinalChange() {
+        updateUI(true);
+    }
+
     function bindInputSync(rangeEl, inputEl) {
         if (!rangeEl || !inputEl) return;
         rangeEl.addEventListener('input', (e) => {
             inputEl.value = e.target.value;
-            updateUI();
+            handleLiveInput();
         });
-        inputEl.addEventListener('input', (e) => {
-            rangeEl.value = e.target.value;
-            updateUI();
+        rangeEl.addEventListener('change', (e) => {
+            inputEl.value = e.target.value;
+            handleFinalChange();
+        });
+        inputEl.addEventListener('input', () => {
+            handleLiveInput();
         });
         inputEl.addEventListener('change', () => {
-            updateUI();
+            handleFinalChange();
+        });
+        inputEl.addEventListener('blur', () => {
+            handleFinalChange();
         });
     }
 
@@ -753,8 +769,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     [inputEdadInicio, inputAniosAporte, inputPctJugador, inputPctClub, inputTasaAnual].forEach(el => {
         if (el) {
-            el.addEventListener('input', updateUI);
-            el.addEventListener('change', updateUI);
+            el.addEventListener('input', handleLiveInput);
+            el.addEventListener('change', handleFinalChange);
+            el.addEventListener('blur', handleFinalChange);
         }
     });
 
