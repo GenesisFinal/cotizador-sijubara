@@ -667,6 +667,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateUI(isFinalEvent = false) {
+        if (typeof Chart === 'undefined') {
+            setTimeout(() => updateUI(isFinalEvent), 50);
+            return;
+        }
         const inputs = getInputs(isFinalEvent);
         const inputs = getInputs();
         const res = calculateSimulation(inputs);
@@ -724,10 +728,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (resRentaMensualEstimada) resRentaMensualEstimada.textContent = `${formatCurrencyFull(res.rentaMensualEstimada)} / mes`;
         if (resRentaEdad) resRentaEdad.textContent = inputs.edadRetiro;
 
-        renderEvolutionChart(res);
-        renderDoughnutChart(res);
-        updateGoalCalculator(res);
-        renderTable(res.annualData, tableSearchAge ? tableSearchAge.value : '');
+        try {
+            renderEvolutionChart(res);
+        } catch (e) {
+            console.error('Error in renderEvolutionChart:', e);
+        }
+
+        try {
+            renderDoughnutChart(res);
+        } catch (e) {
+            console.error('Error in renderDoughnutChart:', e);
+        }
+
+        try {
+            updateGoalCalculator(res);
+        } catch (e) {
+            console.error('Error in updateGoalCalculator:', e);
+        }
+
+        try {
+            renderTable(res.annualData, tableSearchAge ? tableSearchAge.value : '');
+        } catch (e) {
+            console.error('Error in renderTable:', e);
+        }
 
         if (window.lucide) {
             window.lucide.createIcons();
