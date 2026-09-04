@@ -1207,28 +1207,84 @@ input[type="number"] {
     color: #6b7280;
 }
 
+
 /* ==========================================================================
-   PDF Template & Print Styles (Strict 2-Page A4 Executive Report)
+   PDF Modal Overlay & 2-Page Strict A4 Formatting
    ========================================================================== */
-.pdf-export-container {
+.pdf-modal-overlay {
     position: fixed;
     top: 0;
-    left: -12000px;
-    width: 760px;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.82);
+    backdrop-filter: blur(4px);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding: 30px 15px;
+    box-sizing: border-box;
+}
+
+.pdf-modal-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px 28px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    margin-bottom: 20px;
+    max-width: 420px;
+    width: 90%;
+}
+
+.pdf-modal-card h3 {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--sij-navy);
+    margin-bottom: 4px;
+}
+
+.pdf-modal-card p {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0;
+}
+
+.pdf-modal-spinner {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.spinner-ring {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #e2e8f0;
+    border-top-color: var(--red-main);
+    border-radius: 50%;
+    animation: spinRing 0.8s linear infinite;
+}
+
+@keyframes spinRing {
+    to { transform: rotate(360deg); }
+}
+
+.pdf-export-container {
     background: #ffffff;
     color: #1e293b;
     font-family: 'Sora', sans-serif;
-    padding: 0;
-    margin: 0;
-    z-index: -9999;
-    opacity: 1;
-    pointer-events: none;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    margin: 0 auto;
 }
 
 .pdf-page {
-    width: 760px;
-    padding: 32px 36px;
-    margin: 0 auto;
+    width: 780px;
+    min-height: 1060px;
+    padding: 34px 38px;
     background: #ffffff;
     box-sizing: border-box;
     display: flex;
@@ -1503,7 +1559,7 @@ input[type="number"] {
 .pdf-signatures {
     display: flex;
     justify-content: center;
-    margin-top: 24px;
+    margin-top: 20px;
 }
 
 .pdf-sig-box {
