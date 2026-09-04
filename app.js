@@ -783,7 +783,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI();
     });
 
-    btnExportExcel.addEventListener('click', () => {
+    if (btnExportExcel) btnExportExcel.addEventListener('click', () => {
         if (!lastSimulationResult) return;
         const res = lastSimulationResult;
 
