@@ -1169,113 +1169,65 @@ input[type="number"] {
 
 
 .milestone-badge {
-
     display: inline-flex;
-
     align-items: center;
-
     gap: 7px;
-
     font-size: 12px;
-
     font-weight: 700;
-
     color: var(--sij-blue);
-
     margin-bottom: 12px;
-
 }
 
-
+.card-milestone.milestone-retirement .milestone-badge {
+    padding-right: 130px;
+}
 
 .milestone-badge.accent-red {
-
     color: var(--red-main);
-
 }
-
-
 
 .milestone-badge svg {
-
     width: 16px;
-
     height: 16px;
-
 }
-
-
 
 .milestone-main-amount {
-
     display: flex;
-
     align-items: baseline;
-
     gap: 6px;
-
     margin-bottom: 10px;
-
 }
-
-
 
 .milestone-main-amount .currency {
-
     font-size: 18px;
-
     font-weight: 700;
-
     color: #64748b;
-
 }
-
-
 
 .milestone-main-amount .amount {
-
     font-size: 38px;
-
     font-weight: 800;
-
     color: var(--sij-navy);
-
     letter-spacing: -1px;
-
 }
-
-
 
 .milestone-main-amount.text-glow .amount {
-
     color: var(--red-main);
-
 }
 
-
-
 .salary-multiplier-badge {
-
     display: inline-flex;
-
     align-items: center;
-
     gap: 6px;
-
     font-size: 12px;
-
     font-weight: 600;
-
     color: #334155;
-
     background: #f1f5f9;
-
     padding: 6px 12px;
-
     border-radius: var(--radius-sm);
-
     margin-bottom: 18px;
-
+    width: fit-content;
+    white-space: nowrap;
 }
 
 
