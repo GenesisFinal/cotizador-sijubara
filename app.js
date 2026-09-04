@@ -786,6 +786,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+        // Desactivar scroll brusco de la rueda del mouse sobre inputs numéricos y rangos
+    document.querySelectorAll('input[type="number"], input[type="range"]').forEach(input => {
+        input.addEventListener('wheel', (e) => {
+            if (document.activeElement === input) {
+                input.blur();
+            }
+            e.preventDefault();
+        }, { passive: false });
+    });
+
     if (btnResetDefaults) {
         btnResetDefaults.addEventListener('click', () => {
             inputContrato.value = 4000;
