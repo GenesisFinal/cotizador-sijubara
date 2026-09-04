@@ -186,9 +186,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const interesesTotalesRetiro = Math.max(0, estadoRetiro.saldoTotal - totalAportadoEfectivo);
         const multiplicadorCapital = totalAportadoEfectivo > 0 ? (estadoRetiro.saldoTotal / totalAportadoEfectivo) : 0;
 
-        const tasaRentaMensual = Math.pow(1 + 0.04, 1 / 12) - 1;
-        const mesesRenta = 240;
-        const rentaMensualEstimada = estadoRetiro.saldoTotal * (tasaRentaMensual / (1 - Math.pow(1 + tasaRentaMensual, -mesesRenta)));
+        // Cálculo de Renta Financiera Cierta a 20 años (240 meses) a la tasa técnica del plan
+        const tasaTecnicaAnual = Math.min(tasaInteresAnual, 0.05); // Tasa técnica garantizada de retiro (máx 5% anual)
+        const tasaRentaMensual = Math.pow(1 + tasaTecnicaAnual, 1 / 12) - 1;
+        const mesesRenta = 240; // 20 años x 12 meses
+        const rentaMensualEstimada = estadoRetiro.saldoTotal > 0 
+            ? estadoRetiro.saldoTotal * (tasaRentaMensual / (1 - Math.pow(1 + tasaRentaMensual, -mesesRenta)))
+            : 0;
 
         return {
             params,
@@ -362,6 +366,90 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Plugin personalizado de Chart.js para dibujar las 2 zonas de etapas y la línea de hito
+    const periodZonesPlugin = {
+        id: 'periodZones',
+        beforeDraw: (chart) => {
+            const { ctx, chartArea, scales: { x, y } } = chart;
+            if (!chartArea || !lastSimulationResult) return;
+
+            const res = lastSimulationResult;
+            const edadFin = res.edadFinCarrera;
+            const labels = chart.data.labels;
+            const finIndex = labels.indexOf(`Edad ${edadFin}`);
+            if (finIndex === -1) return;
+
+            const xFin = x.getPixelForValue(finIndex);
+            const xStart = chartArea.left;
+            const xEnd = chartArea.right;
+            const height = chartArea.bottom - chartArea.top;
+
+            ctx.save();
+
+            // 1. Zona 1: Período Activo de Aportes (Sombreado Azul Suave)
+            ctx.fillStyle = 'rgba(45, 79, 143, 0.08)';
+            ctx.fillRect(xStart, chartArea.top, xFin - xStart, height);
+
+            // Etiqueta superior Zona 1
+            ctx.font = '700 11px Sora, sans-serif';
+            ctx.fillStyle = '#1e3a8a';
+            ctx.textAlign = 'center';
+            const midZone1 = (xStart + xFin) / 2;
+            if (xFin - xStart > 90) {
+                ctx.fillText('Etapa Activa de Aportes', midZone1, chartArea.top + 22);
+            }
+
+            // 2. Zona 2: Período de Capitalización Pura (Sombreado Rojo/Rosa Suave)
+            ctx.fillStyle = 'rgba(226, 0, 57, 0.05)';
+            ctx.fillRect(xFin, chartArea.top, xEnd - xFin, height);
+
+            // Etiqueta superior Zona 2
+            ctx.font = '700 11px Sora, sans-serif';
+            ctx.fillStyle = '#b91f38';
+            ctx.textAlign = 'center';
+            const midZone2 = (xFin + xEnd) / 2;
+            if (xEnd - xFin > 110) {
+                ctx.fillText('Capitalización Pura (Sin Aportes)', midZone2, chartArea.top + 22);
+            }
+
+            // 3. Línea vertical divisoria en Fin de Carrera
+            ctx.strokeStyle = '#2d4f8f';
+            ctx.lineWidth = 2.5;
+            ctx.setLineDash([5, 4]);
+            ctx.beginPath();
+            ctx.moveTo(xFin, chartArea.top);
+            ctx.lineTo(xFin, chartArea.bottom);
+            ctx.stroke();
+
+            // 4. Badge indicador de Fin de Carrera sobre la línea divisoria
+            ctx.setLineDash([]);
+            const badgeText = `Fin Carrera (${edadFin} años)`;
+            ctx.font = 'bold 10px Sora, sans-serif';
+            const textWidth = ctx.measureText(badgeText).width;
+            const badgeWidth = textWidth + 16;
+            const badgeHeight = 22;
+            const badgeX = Math.min(Math.max(xFin - badgeWidth / 2, chartArea.left + 4), chartArea.right - badgeWidth - 4);
+            const badgeY = chartArea.top + 34;
+
+            // Fondo del badge
+            ctx.fillStyle = '#162447';
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, 5);
+            } else {
+                ctx.rect(badgeX, badgeY, badgeWidth, badgeHeight);
+            }
+            ctx.fill();
+
+            // Texto del badge
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.fillText(badgeText, badgeX + badgeWidth / 2, badgeY + 15);
+
+            ctx.restore();
+        }
+    };
+
     function renderEvolutionChart(res) {
         if (!evolutionChartCanvas) return;
 
@@ -370,6 +458,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const dataClub = res.annualData.map(d => Math.round(d.saldoClub));
         const dataTotal = res.annualData.map(d => Math.round(d.saldoTotal));
 
+        // Encontrar índices de puntos clave para resaltarlos
+        const finIndex = labels.indexOf(`Edad ${res.edadFinCarrera}`);
+        const retIndex = labels.indexOf(`Edad ${res.retiro.edad}`);
+
+        const pointRadii = labels.map((_, idx) => (idx === finIndex || idx === retIndex) ? 6 : 2);
+        const pointHoverRadii = labels.map((_, idx) => (idx === finIndex || idx === retIndex) ? 9 : 5);
+
         let datasets = [];
 
         if (currentChartView === 'stacked') {
@@ -377,20 +472,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 {
                     label: 'Fondo Jugador (USD)',
                     data: dataJugador,
-                    backgroundColor: 'rgba(45, 79, 143, 0.45)',
+                    backgroundColor: 'rgba(45, 79, 143, 0.50)',
                     borderColor: '#2d4f8f',
-                    borderWidth: 2,
+                    borderWidth: 2.5,
                     fill: true,
-                    tension: 0.3
+                    tension: 0.3,
+                    pointRadius: pointRadii,
+                    pointHoverRadius: pointHoverRadii,
+                    pointBackgroundColor: '#2d4f8f'
                 },
                 {
                     label: 'Fondo Aporte Club (USD)',
                     data: dataClub,
-                    backgroundColor: 'rgba(58, 199, 146, 0.45)',
+                    backgroundColor: 'rgba(58, 199, 146, 0.50)',
                     borderColor: '#3ac792',
-                    borderWidth: 2,
+                    borderWidth: 2.5,
                     fill: true,
-                    tension: 0.3
+                    tension: 0.3,
+                    pointRadius: pointRadii,
+                    pointHoverRadius: pointHoverRadii,
+                    pointBackgroundColor: '#3ac792'
                 }
             ];
         } else {
@@ -399,11 +500,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     label: 'Fondo Total Acumulado (USD)',
                     data: dataTotal,
                     borderColor: '#e20039',
-                    backgroundColor: 'rgba(226, 0, 57, 0.08)',
+                    backgroundColor: 'rgba(226, 0, 57, 0.10)',
                     borderWidth: 3,
                     fill: false,
                     tension: 0.3,
-                    pointRadius: 3
+                    pointRadius: pointRadii.map(r => r === 6 ? 7 : 3),
+                    pointHoverRadius: pointHoverRadii,
+                    pointBackgroundColor: '#e20039'
                 },
                 {
                     label: 'Fondo Jugador (USD)',
@@ -411,8 +514,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     borderColor: '#2d4f8f',
                     backgroundColor: 'transparent',
                     borderWidth: 2,
-                    borderDash: [4, 4],
-                    tension: 0.3
+                    borderDash: [5, 4],
+                    tension: 0.3,
+                    pointRadius: 0
                 },
                 {
                     label: 'Fondo Club (USD)',
@@ -420,8 +524,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     borderColor: '#3ac792',
                     backgroundColor: 'transparent',
                     borderWidth: 2,
-                    borderDash: [4, 4],
-                    tension: 0.3
+                    borderDash: [5, 4],
+                    tension: 0.3,
+                    pointRadius: 0
                 }
             ];
         }
@@ -440,6 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     labels: labels,
                     datasets: datasets
                 },
+                plugins: [periodZonesPlugin],
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -453,7 +559,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             labels: {
                                 font: { family: 'Sora', size: 12, weight: '600' },
                                 usePointStyle: true,
-                                boxWidth: 8
+                                boxWidth: 8,
+                                padding: 16
                             }
                         },
                         tooltip: {
@@ -465,6 +572,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             callbacks: {
                                 label: function(context) {
                                     return ` ${context.dataset.label}: USD $${context.parsed.y.toLocaleString('es-AR')}`;
+                                },
+                                afterTitle: function(context) {
+                                    const edadNum = parseInt(context[0].label.replace('Edad ', ''), 10);
+                                    if (edadNum <= res.edadFinCarrera) {
+                                        return 'Período Activo de Aportes';
+                                    } else {
+                                        return 'Período de Capitalización Pura (Sin Aportes)';
+                                    }
                                 }
                             }
                         }
