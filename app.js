@@ -809,11 +809,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Exportación a PDF Oficial (2 Páginas)
+    // Exportación a PDF Oficial (2 Páginas con Overlay Modal Visible)
     if (btnExportPDF) {
         btnExportPDF.addEventListener('click', () => {
             if (!lastSimulationResult) return;
             const res = lastSimulationResult;
+
+            const modalOverlay = document.getElementById('pdfModalOverlay');
+            const pdfTemplate = document.getElementById('pdfExportTemplate');
 
             const nombreJugador = inputNombreJugador.value.trim() || 'Nombre y Apellido';
             const clubJugador = inputClubJugador.value.trim() || 'Club de Basquetbol';
@@ -840,7 +843,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.getElementById('pdfKpiEdadRet').textContent = res.params.edadRetiro;
             document.getElementById('pdfKpiTotalRet').textContent = formatCurrencyFull(res.retiro.saldoTotal);
-            document.getElementById('pdfKpiEquivRet').textContent = `Equiv. a ${formatDecimal(res.retiro.mesesTotal)} meses de contrato (~${(res.retiro.mesesTotal/12).toFixed(1)} años)`;
+            document.getElementById('pdfKpiEquivRet').textContent = `Equiv. a ${formatDecimal(res.retiro.mesesTotal)} meses (~${(res.retiro.mesesTotal/12).toFixed(1)} años)`;
             document.getElementById('pdfKpiJRet').textContent = formatCurrencyFull(res.retiro.saldoJugador);
             document.getElementById('pdfKpiCRet').textContent = formatCurrencyFull(res.retiro.saldoClub);
 
@@ -897,13 +900,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (elPctR) elPctR.textContent = `${pctR.toFixed(1)}%`;
             if (elValR) elValR.textContent = formatCurrencyFull(res.intereses);
 
-            // 4. Capturar PDF desde elemento offscreen
-            const element = document.getElementById('pdfExportTemplate');
-
-            const btnText = btnExportPDF.querySelector('span');
-            const originalText = btnText ? btnText.textContent : 'Exportar PDF';
-            if (btnText) btnText.textContent = 'Generando...';
-            btnExportPDF.disabled = true;
+            // 4. Mostrar modal overlay para que html2canvas capture el contenido 100% visible
+            if (modalOverlay) {
+                modalOverlay.style.display = 'flex';
+                modalOverlay.scrollTop = 0;
+            }
 
             const opt = {
                 margin: [4, 6, 4, 6],
@@ -915,24 +916,21 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             setTimeout(() => {
-                if (window.html2pdf) {
-                    window.html2pdf().set(opt).from(element).save().then(() => {
-                        if (btnText) btnText.textContent = originalText;
-                        btnExportPDF.disabled = false;
+                if (window.html2pdf && pdfTemplate) {
+                    window.html2pdf().set(opt).from(pdfTemplate).save().then(() => {
+                        if (modalOverlay) modalOverlay.style.display = 'none';
                         if (window.confetti) {
                             window.confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
                         }
                     }).catch(err => {
                         console.error('Error generating PDF:', err);
-                        if (btnText) btnText.textContent = originalText;
-                        btnExportPDF.disabled = false;
+                        if (modalOverlay) modalOverlay.style.display = 'none';
                     });
                 } else {
-                    if (btnText) btnText.textContent = originalText;
-                    btnExportPDF.disabled = false;
+                    if (modalOverlay) modalOverlay.style.display = 'none';
                     window.print();
                 }
-            }, 120);
+            }, 350);
         });
     }
 
